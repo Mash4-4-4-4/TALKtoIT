@@ -1,8 +1,18 @@
-const mongoose = require("mongoose")
+import mongoose from "mongoose";
 
-const PdfSchema=new mongoose.Schema({
-    pdf:String,
-  
-},{timestamps:true,collections:"pdfs"})
+const pdfSchema = new mongoose.Schema(
+  {
+    pdf: String,
+  },
+  {
+    timestamps: true,
+    collection: "pdfs",
+  }
+);
 
-mongoose.model("Pdf",PdfSchema)
+const PdfModel = mongoose.model(
+  "Pdf",
+  pdfSchema
+);
+
+export default PdfModel;

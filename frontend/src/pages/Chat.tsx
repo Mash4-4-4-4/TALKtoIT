@@ -1,5 +1,6 @@
 //very important file understand this!!!
 import React, { useEffect, useState } from "react";
+import PdfUpload from "../components/PdfUpload";
 import {deleteAllChats, getAllChats} from "../helpers/api.communication";
 import {Prism as SyntaxHighlighter} from "react-syntax-highlighter"
 import { coldarkCold } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -113,61 +114,6 @@ const handleDeleteChats=()=>
     toast.error("Failed to delete chats");
   }
 }
-
-
-
-
-
-
-
-
-const [file,setFile]=useState<File|null>(null);
-const [allpdfs, setAllpdfs] = useState<any[]>([]);
-
-const getPdf=async()=>
-{
-  const result=await fetch("http://localhost:5000/getpdfs");
-  const data=await result.json();
-setAllpdfs(data.pdfs);
-console.log(data);
-if(data.pdfs.length>0)
-{
-   showpdf(allpdfs[allpdfs.length-1]?.pdf);
-}
-}
-
-const showpdf=(pdf:string)=>{
-  const fileUrl=`http://localhost:5000/files/${pdf}`;
-  window.open(fileUrl, "_blank");
-}
-const handleFileSend=async(e: React.FormEvent<HTMLFormElement>)=>
-{ 
-  e.preventDefault();
-  const formData=new FormData();  
-  if(file)
-  {
-    formData.append("file",file);  //appends the file to formData with key "file"
-  }
-  console.log(file);
-  const result=await fetch("http://localhost:5000/uploadfiles",{
-    method:"POST",
-    body:formData,
-  
-})
-}     
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const hasFetched = React.useRef(false);
 useEffect(() => {
@@ -340,64 +286,7 @@ useEffect(()=>
               },
             }}
           />
-
-
-
-
-
-
-
-
-
-
-           <form onSubmit={handleFileSend} style={{display:"flex",gap:"10px",alignItems:"center"}}>
-          <input
-          onChange={(e: React.ChangeEvent<HTMLInputElement>)=>{if(e.target.files&&e.target.files[0])setFile(e.target.files[0])}}
-           type="file" 
-           placeholder="Upload a file"
-          accept=".pdf"/>
-          <button
-          style={{cursor:"pointer",
-            backgroundColor:"#2563eb",
-            color:"white",
-            border:"none",
-            padding:"10px 20px",
-            borderRadius:"8px"}}
-           type="submit"
-          >
-            SUBMIT
-          </button>
-          </form>
-          <button
-          style={{cursor:"pointer",
-            backgroundColor:"#2563eb",
-            color:"white",
-            border:"none",
-            padding:"10px 20px",
-            borderRadius:"8px"}}
-      onClick={getPdf}           >
-            Show
-          </button>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<PdfUpload />
            <IconButton
            onClick={handleSend}
             sx={{

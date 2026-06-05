@@ -73,3 +73,45 @@ export const deleteAllChats=async()=>
     }
     return await res.data;
 }
+
+export const uploadPdf = async (
+  formData: FormData
+) => {
+  const res = await axios.post(
+    "/pdf/upload",
+    formData,
+    {
+      headers: {
+        "Content-Type":
+          "multipart/form-data",
+      },
+    }
+  );
+
+  return res.data;
+};
+
+export const getPdfText = async (
+  formData: FormData
+) => {
+  const res = await axios.post(
+    "/pdf/text",
+    formData,
+    {
+      headers: {
+        "Content-Type":
+          "multipart/form-data",
+      },
+    }
+  );
+
+  return res.data;
+};
+
+export const getAllPdfs = async () => {
+  const res = await axios.get(
+    "/pdf/all"
+  );
+
+  return res.data;
+};
