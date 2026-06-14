@@ -100,6 +100,7 @@ try {
 
 //delete chats function
 
+
 const handleDeleteChats=()=>
 {
   try
@@ -198,6 +199,23 @@ useEffect(()=>
           >
         <DeleteIcon/>
       </IconButton> 
+<button
+  onClick={() => navigate("/pdf")}
+  style={{
+    cursor: "pointer",
+    padding: "12px 24px",
+    border: "none",
+    borderRadius: "10px",
+    backgroundColor: "#1976d2",
+    color: "white",
+    fontSize: "16px",
+    fontWeight: "600",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    transition: "all 0.2s ease",
+  }}
+>
+  📄 Chat with PDF
+</button>
       </Box>
 
       {/* Main Chat Area */}
@@ -286,7 +304,6 @@ useEffect(()=>
               },
             }}
           />
-<PdfUpload />
            <IconButton
            onClick={handleSend}
             sx={{

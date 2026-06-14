@@ -5,7 +5,7 @@ export const chunkText= async (
 )=>
 {
      const splitter=new RecursiveCharacterTextSplitter
-     ({chunkSize:30,chunkOverlap:5});
+     ({chunkSize:300,chunkOverlap:50});
      const chunks=await splitter.splitText(text);
      return chunks;
 }

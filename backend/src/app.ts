@@ -1,38 +1,11 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-import { config } from "dotenv";
 import cookieParser from "cookie-parser";
 
 import appRouter from "./routes/Router";
 
 const app = express();
-
-config();
-
-
-import { chunkText } from "./services/chunkService";
-import  {generateEmbedding} from "./services/embeddingService";
-
-async function test() {
-
-  const embedding =
-    await generateEmbedding(
-      "Variables store values"
-    );
-
-  console.log(
-    embedding?.length
-  );
-
-  console.log(
-    embedding?.slice(0,10)
-  );
-}
-
-test();
-
-
 
 
 app.use(

@@ -115,3 +115,18 @@ export const getAllPdfs = async () => {
 
   return res.data;
 };
+
+export const askPdfQuestion=async(
+  pdfId:string,
+  question:string
+)=>
+{
+  const res=await axios.post(
+    "/pdf/chat",
+    {
+       pdfId,
+       question,
+    }
+  );
+  return res.data;
+}

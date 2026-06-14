@@ -3,6 +3,8 @@ import {
   getAllPdfs,
   extractPdfText,
 } from "../services/PdfService";
+import { askPdf } from "../services/chatService";
+import { processPdf } from "../services/pdfPipelineService";
 import { Request, Response } from "express";
 export const uploadPdf =
 async (req: Request, res: Response) => {
@@ -17,11 +19,14 @@ async (req: Request, res: Response) => {
         "No file uploaded",
       });
     }
+const filename = req.file.filename;
 
-    const filename =
-      req.file.filename;
-
-    await savePdf(filename);
+const pdf = await savePdf(filename);
+console.log("PROCESSING PDF...");
+await processPdf(
+  pdf._id.toString(),
+  req.file.path
+);
 
     return res.json({
       message:
@@ -98,3 +103,39 @@ async (req: Request, res: Response) => {
     );
   }
 };
+
+export const askPdfQuestion=async(
+  req:Request,res:Response
+)=>
+{
+  try {
+     const {pdfId,question}=req.body;
+     if(!pdfId || !question)
+      {
+ return res.status(400).json({message:"pdfid and questions are required"});
+  }
+  console.log("PDF ID RECEIVED:", pdfId);
+console.log("QUESTION RECEIVED:", question);
+  const answer=await askPdf(
+            pdfId,
+            question
+        )
+        return res.status(200).json({
+    answer
+});
+ } catch(error)
+{
+    console.log("FULL ERROR:");
+    console.error(error);
+
+    if(error instanceof Error)
+    {
+        console.log("MESSAGE:", error.message);
+        console.log("STACK:", error.stack);
+    }
+
+    return res.status(500).json({
+        message:"Error answering PDF question"
+    });
+}
+}

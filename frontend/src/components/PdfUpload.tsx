@@ -5,7 +5,11 @@ import {
   getAllPdfs,
 } from "../helpers/api.communication";
 
-const PdfUpload = () => {
+
+type Props = {
+  fetchPdfs: () => Promise<void>;
+};
+const PdfUpload = ({ fetchPdfs }: Props) => {
   const [file, setFile] = useState<File | null>(null);
   const [allpdfs, setAllpdfs] = useState<any[]>([]);
 
@@ -46,6 +50,7 @@ const PdfUpload = () => {
       formData.append("file", file);
 
       await uploadPdf(formData);
+      await fetchPdfs();
 
       const text = await getPdfText(formData);
 
