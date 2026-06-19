@@ -3,6 +3,8 @@ import {
   getAllPdfs,
   extractPdfText,
 } from "../services/PdfService";
+import PdfModel from "../models/Pdf";
+import ChunksModel from "../models/ChunksModel";
 import { askPdf } from "../services/chatService";
 import { processPdf } from "../services/pdfPipelineService";
 import { Request, Response } from "express";
@@ -32,6 +34,7 @@ await processPdf(
       message:
       "File uploaded successfully",
       filename,
+      pdfId:pdf._id,
     });
 
   } catch (error) {
@@ -138,4 +141,25 @@ console.log("QUESTION RECEIVED:", question);
         message:"Error answering PDF question"
     });
 }
+}
+
+export const deletePdf=async(
+  req:Request,res:Response
+)=>
+{
+  try {
+    const {id}=req.params;
+    await ChunksModel.deleteMany({pdfId:id});
+    const pdf=await PdfModel.findByIdAndDelete(id);
+
+    if(!pdf)
+    {
+      return res.status(404).json({message:"pdf not found"});
+    }
+    return res.status(200).json({message:"pdf deleted succesfully!!"});
+
+    
+  } catch (error) {
+     res.send(error);
+  }
 }

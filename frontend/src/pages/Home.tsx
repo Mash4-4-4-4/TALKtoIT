@@ -1,208 +1,288 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Box, Typography } from "@mui/material";
 import {
-  Sparkles,
-  BrainCircuit,
-  ShieldCheck,
-  Zap,
-} from "lucide-react";
-import { motion } from "framer-motion";
+  FaFolder,
+  FaRobot,
+  FaFilePdf,
+  FaDatabase,
+  FaCog,
+  FaTerminal,
+} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
-const features = [
-  {
-    icon: <BrainCircuit size={28} />,
-    title: "Smart Conversations",
-    desc: "Experience fluid AI interactions with memory, context awareness, and human-like responses.",
-  },
-  {
-    icon: <Zap size={28} />,
-    title: "Lightning Fast",
-    desc: "Optimized responses powered by modern AI infrastructure for seamless chatting.",
-  },
-  {
-    icon: <ShieldCheck size={28} />,
-    title: "Secure & Private",
-    desc: "Your conversations stay protected with secure authentication and encrypted sessions.",
-  },
-];
+/* ─── Add to your global CSS / index.css ──────────────────────────────────────
+   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+   ─────────────────────────────────────────────────────────────────────────── */
 
-const Home = () => {
+const CYAN  = "#00ffcc";
+const RED   = "#ff2244";
+const AMBER = "#ffaa00";
+const GREEN = "#00ff41";
+const BLUE  = "#4488ff";
+const DIM   = "#a0d8d0";
+const BODY  = "#c8f0e8";
+const BLACK = "#000000";
+
+const MONO  = "'Share Tech Mono', 'Courier New', monospace";
+const PIXEL = "'VT323', 'Courier New', monospace";
+
+type AccentColor = "cyan" | "red" | "amber" | "green" | "blue";
+const ACCENT: Record<AccentColor, string> = { cyan: CYAN, red: RED, amber: AMBER, green: GREEN, blue: BLUE };
+
+/* ─── NeonWindow ───────────────────────────────────────────────────────────── */
+const NeonWindow = ({
+  title, accent = "cyan", children, sx,
+}: {
+  title: string; accent?: AccentColor; children: React.ReactNode; sx?: object;
+}) => {
+  const color = ACCENT[accent];
   return (
-    <div className="min-h-screen bg-[#050816] text-white overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 left-0 w-72 h-72 bg-cyan-500/20 blur-3xl rounded-full animate-pulse" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/20 blur-3xl rounded-full animate-pulse" />
-      </div>
+    <Box sx={{ border: `1.5px solid ${color}`, boxShadow: `0 0 8px ${color}44, inset 0 0 4px ${color}11`, background: "rgba(0,0,0,0.85)", ...sx }}>
+      <Box sx={{ borderBottom: `1px solid ${color}44`, px: 1.5, py: 0.5, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Typography sx={{ fontFamily: MONO, fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase", color }}>
+          {title}
+        </Typography>
+        <Box sx={{ display: "flex", gap: "4px" }}>
+          {[0, 1, 2].map((i) => <Box key={i} sx={{ width: 8, height: 8, border: `1px solid ${color}` }} />)}
+        </Box>
+      </Box>
+      <Box sx={{ p: 1.5, fontFamily: MONO, color: BODY }}>{children}</Box>
+    </Box>
+  );
+};
 
-      {/* Navbar */}
-      <nav className="w-full px-6 md:px-16 py-5 flex items-center justify-between backdrop-blur-md">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold tracking-wide flex items-center gap-2"
+/* ─── DesktopIcon ──────────────────────────────────────────────────────────── */
+const DesktopIcon = ({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick?: () => void }) => (
+  <Box
+    onClick={onClick}
+    sx={{
+      display: "flex", flexDirection: "column", alignItems: "center", gap: "6px",
+      p: 1, border: `1px solid ${CYAN}22`, cursor: "pointer", userSelect: "none", transition: "all 0.15s",
+      "&:hover": { background: `${CYAN}11`, borderColor: `${CYAN}88` },
+    }}
+  >
+    <Box sx={{ fontSize: "22px", color: AMBER }}>{icon}</Box>
+    <Typography sx={{ fontFamily: MONO, fontSize: "10px", letterSpacing: "1px", color: BODY, textAlign: "center" }}>
+      {label}
+    </Typography>
+  </Box>
+);
+
+/* ─── StatusDot — renders as inline-block span to avoid <div> inside <p> ──── */
+const StatusDot = ({ state }: { state: "on" | "warn" | "off" }) => {
+  const bg = state === "on" ? GREEN : state === "warn" ? AMBER : "#444";
+  return (
+    <Box
+      component="span"           // ← span, not div, so it's safe inside Typography
+      sx={{
+        display: "inline-block",
+        width: 8, height: 8, borderRadius: "50%",
+        background: bg,
+        boxShadow: state !== "off" ? `0 0 5px ${bg}` : "none",
+        mr: "6px",
+        verticalAlign: "middle",
+        animation: state === "on" ? "ttoPulse 2s infinite" : "none",
+        "@keyframes ttoPulse": { "0%,100%": { opacity: 1 }, "50%": { opacity: 0.4 } },
+      }}
+    />
+  );
+};
+
+/* ─── ProgressBar ──────────────────────────────────────────────────────────── */
+const ProgressBar = ({ value, color = CYAN }: { value: number; color?: string }) => (
+  <Box sx={{ height: "8px", border: `1px solid ${color}44`, background: "#001a14", mt: "4px" }}>
+    <Box sx={{ width: `${value}%`, height: "100%", background: color, boxShadow: `0 0 6px ${color}` }} />
+  </Box>
+);
+
+/* ─── RagNode ──────────────────────────────────────────────────────────────── */
+const RagNode = ({ label, color = CYAN }: { label: string; color?: string }) => (
+  <Box sx={{ border: `1px solid ${color}55`, px: "8px", py: "3px", fontSize: "10px", letterSpacing: "1px", color, fontFamily: MONO, whiteSpace: "nowrap" }}>
+    {label}
+  </Box>
+);
+
+/* ─── LogLine — renders > prefix as JSX span, not CSS ::before ────────────── */
+const LogLine = ({ text, type }: { text: string; type: "ok" | "warn" }) => (
+  <Typography
+    component="div"              // ← div, not p, so Box children are valid
+    sx={{ fontFamily: MONO, fontSize: "11px", color: type === "warn" ? AMBER : GREEN, mb: "4px", display: "flex", alignItems: "center", gap: "4px" }}
+  >
+    <span style={{ color: CYAN }}>&gt;</span>
+    {text}
+  </Typography>
+);
+
+/* ─── Home ─────────────────────────────────────────────────────────────────── */
+const Home = () => {
+  const navigate = useNavigate();
+  const [clock, setClock] = useState(new Date().toLocaleTimeString("en-US", { hour12: false }));
+
+  useEffect(() => {
+    const id = setInterval(() => setClock(new Date().toLocaleTimeString("en-US", { hour12: false })), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh", background: BLACK, display: "flex", flexDirection: "column",
+        fontFamily: MONO, color: BODY, position: "relative",
+        "&::before": {
+          content: '""', position: "fixed", inset: 0,
+          background: "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,200,0.015) 2px,rgba(0,255,200,0.015) 4px)",
+          pointerEvents: "none", zIndex: 9999,
+        },
+        "@keyframes ttoGlitch": {
+          "0%,90%,100%": { textShadow: `2px 0 ${RED}, -2px 0 ${BLUE}`, transform: "translateX(0)" },
+          "91%":         { textShadow: `-3px 0 ${RED}, 3px 0 ${BLUE}`, transform: "translateX(2px)" },
+          "93%":         { textShadow: `3px 0 ${GREEN}, -2px 0 ${RED}`, transform: "translateX(-1px)" },
+          "95%":         { textShadow: `2px 0 ${RED}, -2px 0 ${BLUE}`, transform: "translateX(0)" },
+        },
+        "@keyframes ttoBlink": { "0%,100%": { opacity: 1 }, "50%": { opacity: 0 } },
+      }}
+    >
+      {/* ── HERO ── */}
+      <Box sx={{ p: "12px 12px 0" }}>
+        <NeonWindow title="TALKTOIT OS  |  v1.0" accent="red">
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2, py: 0.5 }}>
+            <Box>
+              <Typography sx={{ fontFamily: PIXEL, fontSize: { xs: "36px", md: "52px" }, color: CYAN, letterSpacing: "4px", lineHeight: 1, textShadow: `2px 0 ${RED}, -2px 0 ${BLUE}`, animation: "ttoGlitch 4s infinite" }}>
+                TALKTOIT OS
+              </Typography>
+              <Typography sx={{ fontFamily: MONO, fontSize: "12px", letterSpacing: "3px", color: DIM, mt: "4px" }}>
+                RETRO AI OPERATING SYSTEM
+              </Typography>
+              <Typography sx={{ fontFamily: MONO, fontSize: "11px", letterSpacing: "3px", color: RED, mt: "6px", animation: "ttoBlink 1.2s step-end infinite" }}>
+                ▌ SYSTEM ONLINE ▌
+              </Typography>
+            </Box>
+            <Box sx={{ textAlign: "center" }}>
+              <Typography sx={{ fontFamily: MONO, fontSize: "10px", letterSpacing: "2px", color: AMBER }}>QUERIES PROCESSED</Typography>
+              <Typography sx={{ fontFamily: PIXEL, fontSize: "40px", color: RED, letterSpacing: "3px", textShadow: `0 0 10px ${RED}88` }}>00419</Typography>
+              <Typography sx={{ fontFamily: MONO, fontSize: "10px", letterSpacing: "2px", color: AMBER }}>HIGH SCORE: 99999</Typography>
+            </Box>
+          </Box>
+        </NeonWindow>
+      </Box>
+
+      {/* ── MAIN GRID ── */}
+      <Box sx={{ flex: 1, display: "grid", gridTemplateColumns: { xs: "1fr", lg: "200px 1fr" }, gap: "12px", p: "12px" }}>
+
+        {/* DESKTOP ICONS */}
+        <NeonWindow title="DESKTOP" accent="cyan">
+          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "10px" }}>
+            <DesktopIcon icon={<FaRobot />}    label="AI CHAT"   onClick={() => navigate("/chat")} />
+            <DesktopIcon icon={<FaFilePdf />}  label="PDF CHAT"  onClick={() => navigate("/pdf")} />
+            <DesktopIcon icon={<FaDatabase />} label="VECTOR DB" />
+            <DesktopIcon icon={<FaFolder />}   label="DOCS" />
+            <DesktopIcon icon={<FaCog />}      label="SETTINGS" />
+            <DesktopIcon icon={<FaTerminal />} label="TERMINAL" />
+          </Box>
+          <Box sx={{ mt: 2, borderTop: `1px solid ${CYAN}22`, pt: 1.5 }}>
+            <Typography sx={{ fontFamily: PIXEL, fontSize: "24px", color: BLUE, letterSpacing: "2px" }}>1UP 00419</Typography>
+            <Typography sx={{ fontFamily: MONO, fontSize: "10px", color: AMBER, letterSpacing: "1px", mt: "2px" }}>
+              RANK: 1ST &nbsp;|&nbsp; NAME: USER
+            </Typography>
+          </Box>
+        </NeonWindow>
+
+        {/* RIGHT 2×2 */}
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: "12px" }}>
+
+          {/* SYSTEM STATUS */}
+          <NeonWindow title="SYSTEM STATUS" accent="green">
+            {([ { label: "AI CORE", state: "on", val: "ONLINE" }, { label: "VECTOR SEARCH", state: "on", val: "ACTIVE" }, { label: "PDF MODULE", state: "on", val: "READY" }, { label: "GROQ LLM", state: "on", val: "CONNECTED" }, { label: "REPO CHAT", state: "warn", val: "SOON" } ] as const).map(({ label, state, val }) => (
+              <Box key={label} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: "8px" }}>
+                {/* FIX: component="span" so StatusDot (inline span) is valid inside */}
+                <Typography component="span" sx={{ fontFamily: MONO, fontSize: "11px", color: BODY, display: "flex", alignItems: "center" }}>
+                  <StatusDot state={state} />{label}
+                </Typography>
+                <Typography component="span" sx={{ fontFamily: MONO, fontSize: "11px", color: state === "on" ? GREEN : AMBER }}>
+                  {val}
+                </Typography>
+              </Box>
+            ))}
+            <Typography sx={{ fontFamily: MONO, fontSize: "10px", color: DIM, letterSpacing: "1px", mt: 1 }}>MEMORY USAGE: 68%</Typography>
+            <ProgressBar value={68} color={CYAN} />
+            <Typography sx={{ fontFamily: MONO, fontSize: "10px", color: DIM, letterSpacing: "1px", mt: 1 }}>EMBEDDING ENGINE: 91%</Typography>
+            <ProgressBar value={91} color={AMBER} />
+          </NeonWindow>
+
+          {/* ACTIVITY LOG */}
+          <NeonWindow title="ACTIVITY LOG" accent="amber">
+            {/* FIX: LogLine uses component="div" + JSX span for >, no CSS ::before */}
+            <LogLine text="USER LOGIN OK"        type="ok" />
+            <LogLine text="PDF INDEXED [3 DOCS]" type="ok" />
+            <LogLine text="EMBEDDINGS GENERATED" type="ok" />
+            <LogLine text="VECTOR SEARCH READY"  type="ok" />
+            <LogLine text="GROQ QUOTA: 74%"       type="warn" />
+            <LogLine text="MONGODB CONNECTED"     type="ok" />
+            <LogLine text="RAG PIPELINE WARM"     type="ok" />
+            <Typography component="div" sx={{ fontFamily: MONO, fontSize: "11px", color: CYAN, display: "flex", gap: "4px", animation: "ttoBlink 1s step-end infinite" }}>
+              <span style={{ color: CYAN }}>&gt;</span> SYSTEM STABLE ▌
+            </Typography>
+          </NeonWindow>
+
+          {/* RAG PIPELINE */}
+          <NeonWindow title="RAG PIPELINE" accent="cyan">
+            {[
+              { from: "PDF UPLOAD",    to: "CHUNKING",       fc: CYAN, tc: CYAN  },
+              { from: "GEMINI EMBED",  to: "MONGO VECTOR",   fc: CYAN, tc: CYAN  },
+              { from: "QUERY",         to: "SEMANTIC SEARCH", fc: CYAN, tc: CYAN  },
+              { from: "LLAMA 3.3 70B", to: "ANSWER",         fc: RED,  tc: GREEN },
+            ].map(({ from, to, fc, tc }) => (
+              <Box key={from} sx={{ display: "flex", alignItems: "center", gap: "8px", mb: "8px" }}>
+                <RagNode label={from} color={fc} />
+                <Typography component="span" sx={{ color: AMBER, fontSize: "12px" }}>→</Typography>
+                <RagNode label={to} color={tc} />
+              </Box>
+            ))}
+            <Typography sx={{ fontFamily: MONO, fontSize: "10px", color: AMBER, letterSpacing: "1px", mt: 1 }}>
+              POWERED BY GROQ &nbsp;/&nbsp; MONGODB ATLAS
+            </Typography>
+          </NeonWindow>
+
+          {/* AVAILABLE MODULES */}
+          <NeonWindow title="AVAILABLE MODULES" accent="blue">
+            {[
+              { name: "General Chat",      status: "ONLINE",      state: "on"   },
+              { name: "PDF Chat",          status: "ONLINE",      state: "on"   },
+              { name: "Authentication",    status: "ONLINE",      state: "on"   },
+              { name: "Vector Search",     status: "ONLINE",      state: "on"   },
+              { name: "Persistent History",status: "ONLINE",      state: "on"   },
+              { name: "Repository Chat",   status: "COMING SOON", state: "warn" },
+              { name: "Code Analysis",     status: "QUEUED",      state: "off"  },
+            ].map(({ name, status, state }) => {
+              const bc = state === "on" ? GREEN : state === "warn" ? AMBER : "#444";
+              return (
+                <Box key={name} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", py: "5px", borderBottom: "1px solid #ffffff08" }}>
+                  <Typography sx={{ fontFamily: MONO, fontSize: "11px", color: BODY }}>{name}</Typography>
+                  <Box sx={{ border: `1px solid ${bc}66`, color: bc, fontFamily: MONO, fontSize: "9px", letterSpacing: "1px", px: "6px", py: "2px" }}>{status}</Box>
+                </Box>
+              );
+            })}
+          </NeonWindow>
+
+        </Box>
+      </Box>
+
+      {/* ── TASKBAR ── */}
+      <Box sx={{ height: "44px", background: BLACK, borderTop: `2px solid ${CYAN}`, boxShadow: `0 -2px 12px ${CYAN}33`, display: "flex", alignItems: "center", justifyContent: "space-between", px: 2 }}>
+        <Box
+          onClick={() => navigate("/chat")}
+          sx={{ border: `1.5px solid ${CYAN}`, px: 2, py: 0.5, display: "flex", alignItems: "center", gap: 1, cursor: "pointer", boxShadow: `0 0 6px ${CYAN}44`, fontFamily: MONO, fontSize: "11px", letterSpacing: "2px", color: CYAN, transition: "background 0.15s", "&:hover": { background: `${CYAN}22` } }}
         >
-          <Sparkles className="text-cyan-400" />
-          NovaAI
-        </motion.h1>
-
-        <div className="flex gap-4">
-          <button className="px-5 py-2 rounded-xl border border-white/20 hover:bg-white/10 transition">
-            Login
-          </button>
-
-          <button className="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 transition text-black font-semibold shadow-lg shadow-cyan-500/30">
-            Get Started
-          </button>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="px-6 md:px-16 pt-16 md:pt-28 pb-24 flex flex-col lg:flex-row items-center justify-between gap-16">
-        {/* Left */}
-        <motion.div
-          initial={{ opacity: 0, x: -70 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-2xl"
-        >
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/10 rounded-full px-4 py-2 text-sm mb-6">
-            <Sparkles className="text-cyan-400" size={16} />
-            Personalized AI Assistant
-          </div>
-
-          <h1 className="text-5xl md:text-7xl font-black leading-tight">
-            Your AI Universe,
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 text-transparent bg-clip-text">
-              {" "}
-              Reimagined
-            </span>
-          </h1>
-
-          <p className="mt-6 text-gray-300 text-lg leading-relaxed">
-            Build ideas, ask questions, generate code, and create with an
-            intelligent assistant designed to feel futuristic and personal.
-          </p>
-
-          <div className="flex flex-wrap gap-4 mt-10">
-            <button className="px-8 py-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 transition text-black font-bold shadow-xl shadow-cyan-500/30">
-              Start Chatting
-            </button>
-
-            <button className="px-8 py-4 rounded-2xl border border-white/20 hover:bg-white/10 transition">
-              Explore Features
-            </button>
-          </div>
-        </motion.div>
-
-        {/* Right Animated Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="relative"
-        >
-          <motion.div
-            animate={{ y: [0, -15, 0] }}
-            transition={{
-              repeat: Infinity,
-              duration: 4,
-            }}
-            className="w-[320px] md:w-[420px] bg-white/10 border border-white/10 backdrop-blur-xl rounded-3xl p-6 shadow-2xl"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="font-bold text-xl">NovaAI Assistant</h2>
-                <p className="text-sm text-gray-400">Online</p>
-              </div>
-
-              <div className="w-3 h-3 bg-green-400 rounded-full animate-ping" />
-            </div>
-
-            <div className="space-y-4">
-              <div className="bg-white/10 p-4 rounded-2xl">
-                How can I help you today?
-              </div>
-
-              <div className="bg-cyan-500 text-black p-4 rounded-2xl ml-10">
-                Build me a futuristic AI dashboard 🚀
-              </div>
-
-              <div className="bg-white/10 p-4 rounded-2xl">
-                Generating components, animations, and responsive layouts...
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* Features */}
-      <section className="px-6 md:px-16 py-20">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 1 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold">
-            Why Choose NovaAI?
-          </h2>
-
-          <p className="text-gray-400 mt-4 text-lg">
-            Designed to feel elegant, intelligent, and alive.
-          </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
-            <motion.div
-              key={index}
-              whileHover={{
-                scale: 1.05,
-                rotate: 1,
-              }}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.2 }}
-              className="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-md hover:border-cyan-400/40 transition"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 mb-6">
-                {feature.icon}
-              </div>
-
-              <h3 className="text-2xl font-semibold mb-3">
-                {feature.title}
-              </h3>
-
-              <p className="text-gray-400 leading-relaxed">
-                {feature.desc}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="px-6 md:px-16 py-20">
-        <motion.div
-          whileHover={{ scale: 1.01 }}
-          className="bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border border-white/10 rounded-[40px] p-10 md:p-16 text-center backdrop-blur-xl"
-        >
-          <h2 className="text-4xl md:text-6xl font-black leading-tight">
-            Ready to build the future?
-          </h2>
-
-          <p className="text-gray-300 mt-6 text-lg max-w-2xl mx-auto">
-            Your personalized AI companion is waiting inside the command
-            center.
-          </p>
-
-          <button className="mt-10 px-10 py-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 transition text-black font-bold shadow-xl shadow-cyan-500/30">
-            Launch App
-          </button>
-        </motion.div>
-      </section>
-
-    </div>
+          <FaRobot /><span>START</span>
+        </Box>
+        <Typography sx={{ fontFamily: MONO, fontSize: "11px", color: DIM, letterSpacing: "2px" }}>
+          TALKTOIT OS v1.0 &nbsp;|&nbsp; GROQ + MONGODB
+        </Typography>
+        <Typography sx={{ fontFamily: MONO, fontSize: "11px", color: CYAN, letterSpacing: "2px" }}>
+          {clock}
+        </Typography>
+      </Box>
+    </Box>
   );
 };
 

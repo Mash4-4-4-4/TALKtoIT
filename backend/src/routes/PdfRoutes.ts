@@ -6,6 +6,7 @@ import {
   uploadPdf,
   getPdfs,
   getPdfText,
+  deletePdf
 } from "../controllers/pdfController";
 import { askPdfQuestion } from "../controllers/pdfController";
 const pdfRouter = Router();
@@ -30,5 +31,5 @@ pdfRouter.get(
 pdfRouter.post("/chat",
   askPdfQuestion
 )
-
+pdfRouter.delete("/:id",deletePdf);
 export default pdfRouter;
