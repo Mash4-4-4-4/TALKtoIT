@@ -19,15 +19,23 @@ import { sendChatMessages } from "../helpers/api.communication";
 import { toast } from "react-hot-toast";
 import { FaFilePdf, FaRobot } from "react-icons/fa";
 
-// ── theme tokens ───────────────────────────────────────────────────────────────
-const CYAN  = "#00ffcc";
-const RED   = "#ff2244";
-const AMBER = "#ffaa00";
-const GREEN = "#00ff41";
-const BLACK = "#000000";
-const BODY  = "#c8f0e8";
-const MONO  = "'Share Tech Mono', 'Courier New', monospace";
-const PIXEL = "'VT323', 'Courier New', monospace";
+/* ─── Add to your global CSS / index.css ──────────────────────────────────────
+   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+   ─────────────────────────────────────────────────────────────────────────── */
+
+// ── design tokens ── minimalist dark-card aesthetic ─────────────────────────
+const PAGE_BG        = "#F3F1EC"; // warm ivory backdrop
+const CARD           = "#18181A"; // near-black card surface
+const CARD_ALT       = "#222224"; // nested surface within a dark card
+const SURFACE        = "#FFFFFF"; // light card surface
+const BORDER_SOFT     = "#E8E5DC"; // hairline on light bg
+const BORDER_DARK     = "#333335"; // hairline on dark card
+const TEXT_INK        = "#17171A"; // primary text on light
+const TEXT_MUTED      = "#8B8A84"; // secondary text on light
+const TEXT_PAPER      = "#F6F5F1"; // primary text on dark
+const TEXT_PAPER_DIM  = "#9C9B9E"; // secondary text on dark
+const ACCENT          = "#7C9473"; // quiet sage — status/success only
+const SANS = "'Inter', -apple-system, 'Segoe UI', sans-serif";
 
 // ── types (unchanged) ─────────────────────────────────────────────────────────
 type Message = {
@@ -69,7 +77,6 @@ const Chat = () => {
   const auth      = useAuth();
 
   // ── input text tracker — drives the disabled state of the send button ───────
-  // We track the input value in state so React re-renders when it changes.
   const [inputValue, setInputValue] = useState<string>("");
 
   // ── chat messages ──────────────────────────────────────────────────────────
@@ -78,9 +85,6 @@ const Chat = () => {
   ]);
 
   // ── user display name ──────────────────────────────────────────────────────
-  // auth.user resolves asynchronously after login/signup.
-  // Watch it and update displayName as soon as it's available.
-  // Tries .name → .username → email prefix, in that order.
   const [displayName, setDisplayName] = useState<string>("");
 
   useEffect(() => {
@@ -91,7 +95,7 @@ const Chat = () => {
       (user as any).username ||
       (user as any).email?.split("@")[0] ||
       "";
-    setDisplayName(name.toUpperCase());
+    setDisplayName(name);
   }, [auth?.user]);
 
   // ── scroll-to-bottom ───────────────────────────────────────────────────────
@@ -177,104 +181,112 @@ const Chat = () => {
         height: "100vh",
         maxHeight: "100vh",
         overflow: "hidden",
-        background: BLACK,
-        fontFamily: MONO,
-        position: "relative",
-        "&::before": {
-          content: '""',
-          position: "fixed",
-          inset: 0,
-          background:
-            "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,200,0.012) 2px,rgba(0,255,200,0.012) 4px)",
-          pointerEvents: "none",
-          zIndex: 9999,
-        },
-        "@keyframes ttoBlink": { "0%,100%": { opacity: 1 }, "50%": { opacity: 0 } },
-        "@keyframes ttoPulse":  { "0%,100%": { opacity: 1 }, "50%": { opacity: 0.4 } },
+        background: PAGE_BG,
+        fontFamily: SANS,
+        p: "16px",
+        gap: "16px",
+        boxSizing: "border-box",
       }}
     >
       {/* ── SIDEBAR ── */}
       <Box
         sx={{
-          width: "220px", minWidth: "220px", height: "100vh", overflow: "hidden",
-          background: BLACK, borderRight: `1.5px solid ${CYAN}`,
-          boxShadow: `2px 0 12px ${CYAN}22`, display: "flex",
-          flexDirection: "column", position: "relative", zIndex: 1,
+          width: "240px", minWidth: "240px", height: "100%", overflow: "hidden",
+          background: CARD, borderRadius: "24px",
+          boxShadow: "0 12px 32px rgba(0,0,0,0.10)",
+          display: "flex", flexDirection: "column",
         }}
       >
-        {/* titlebar */}
-        <Box sx={{ borderBottom: `1px solid ${CYAN}44`, px: 1.5, py: 0.75, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Typography sx={{ fontFamily: MONO, fontSize: "10px", letterSpacing: "2px", color: CYAN }}>TALKTOIT OS</Typography>
-          <Box sx={{ display: "flex", gap: "4px" }}>
-            {[0,1,2].map(i => <Box key={i} sx={{ width: 7, height: 7, border: `1px solid ${CYAN}` }} />)}
+        {/* user info */}
+        <Box sx={{ px: 2.5, pt: 3, pb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: "8px", mb: "10px" }}>
+            <Box sx={{ width: 8, height: 8, borderRadius: "50%", background: ACCENT }} />
+            <Typography sx={{ fontFamily: SANS, fontSize: "11px", letterSpacing: "0.5px", color: TEXT_PAPER_DIM, fontWeight: 500 }}>
+              Online
+            </Typography>
           </Box>
-        </Box>
-
-        {/* user info — displayName updates reactively once auth resolves */}
-        <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${CYAN}22` }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: "8px", mb: "4px" }}>
-            <Box sx={{ width: 8, height: 8, borderRadius: "50%", background: GREEN, boxShadow: `0 0 5px ${GREEN}`, animation: "ttoPulse 2s infinite" }} />
-            <Typography sx={{ fontFamily: MONO, fontSize: "10px", letterSpacing: "1px", color: GREEN }}>USER ONLINE</Typography>
-          </Box>
-          <Typography sx={{ fontFamily: PIXEL, fontSize: "20px", color: CYAN, letterSpacing: "2px" }}>
+          <Typography sx={{ fontFamily: SANS, fontWeight: 700, fontSize: "20px", color: TEXT_PAPER, letterSpacing: "-0.3px" }}>
             {displayName || (
-              <Box component="span" sx={{ animation: "ttoBlink 1s step-end infinite", color: `${CYAN}66` }}>
-                LOADING...
-              </Box>
+              <Box component="span" sx={{ color: TEXT_PAPER_DIM }}>Loading…</Box>
             )}
           </Typography>
         </Box>
 
-        {/* modules label */}
-        <Typography sx={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "2px", color: `${CYAN}55`, px: 2, pt: 2, pb: 1 }}>
-          &gt; MODULES
-        </Typography>
+        <Box sx={{ height: "1px", background: BORDER_DARK, mx: 2.5 }} />
 
-        {/* AI Chat */}
-        <Box
-          onClick={() => setChatMessages([])}
-          sx={{ mx: 2, mb: 1, border: `1px solid ${CYAN}55`, px: "12px", py: "8px", fontFamily: MONO, fontSize: "11px", letterSpacing: "2px", color: CYAN, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", transition: "all 0.15s", "&:hover": { background: `${CYAN}11`, borderColor: CYAN } }}
-        >
-          <FaRobot size={13} /> AI CHAT
-        </Box>
+        {/* nav */}
+        <Box sx={{ px: 1.5, pt: 2, display: "flex", flexDirection: "column", gap: "4px" }}>
+          <Box
+            onClick={() => setChatMessages([])}
+            sx={{
+              mx: 1, borderRadius: "14px", px: "14px", py: "11px",
+              fontFamily: SANS, fontSize: "13px", fontWeight: 600, letterSpacing: "0.1px",
+              color: TEXT_PAPER, cursor: "pointer",
+              background: CARD_ALT,
+              display: "flex", alignItems: "center", gap: "10px",
+              transition: "background 0.15s",
+              "&:hover": { background: "#2a2a2c" },
+            }}
+          >
+            <FaRobot size={13} /> AI Chat
+          </Box>
 
-        {/* PDF Chat */}
-        <Box
-          onClick={() => navigate("/pdf")}
-          sx={{ mx: 2, mb: 1, border: `1px solid ${AMBER}55`, px: "12px", py: "8px", fontFamily: MONO, fontSize: "11px", letterSpacing: "2px", color: AMBER, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", transition: "all 0.15s", "&:hover": { background: `${AMBER}11`, borderColor: AMBER } }}
-        >
-          <FaFilePdf size={13} /> PDF CHAT
+          <Box
+            onClick={() => navigate("/pdf")}
+            sx={{
+              mx: 1, borderRadius: "14px", px: "14px", py: "11px",
+              fontFamily: SANS, fontSize: "13px", fontWeight: 500, letterSpacing: "0.1px",
+              color: TEXT_PAPER_DIM, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: "10px",
+              transition: "background 0.15s, color 0.15s",
+              "&:hover": { background: CARD_ALT, color: TEXT_PAPER },
+            }}
+          >
+            <FaFilePdf size={13} /> PDF Chat
+          </Box>
         </Box>
 
         <Box sx={{ flex: 1 }} />
 
-        {/* Clear log */}
-        <Box
-          onClick={handleDeleteChats}
-          sx={{ mx: 2, mb: 2, border: `1px solid ${RED}55`, px: "12px", py: "8px", fontFamily: MONO, fontSize: "11px", letterSpacing: "2px", color: RED, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", transition: "all 0.15s", "&:hover": { background: `${RED}11`, borderColor: RED } }}
-        >
-          <DeleteIcon sx={{ fontSize: "13px" }} /> CLEAR LOG
+        {/* clear chats */}
+        <Box sx={{ px: 1.5, pb: 2 }}>
+          <Box
+            onClick={handleDeleteChats}
+            sx={{
+              mx: 1, borderRadius: "14px", px: "14px", py: "11px",
+              fontFamily: SANS, fontSize: "13px", fontWeight: 500, letterSpacing: "0.1px",
+              color: TEXT_PAPER_DIM, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: "10px",
+              transition: "background 0.15s, color 0.15s",
+              "&:hover": { background: CARD_ALT, color: "#D98577" },
+            }}
+          >
+            <DeleteIcon sx={{ fontSize: "15px" }} /> Clear chat
+          </Box>
         </Box>
 
-        <Typography sx={{ fontFamily: MONO, fontSize: "9px", color: `${CYAN}33`, letterSpacing: "1px", textAlign: "center", pb: 1.5 }}>
-          TALKTOIT OS v1.0
+        <Typography sx={{ fontFamily: SANS, fontSize: "10px", color: "#4A4A4C", letterSpacing: "0.2px", textAlign: "center", pb: 2 }}>
+          TalkToIt
         </Typography>
       </Box>
 
       {/* ── MAIN CHAT AREA ── */}
       <Box
         sx={{
-          flex: 1, minWidth: 0, height: "100vh", display: "flex",
-          flexDirection: "column", overflow: "hidden", position: "relative", zIndex: 1,
+          flex: 1, minWidth: 0, height: "100%", display: "flex",
+          flexDirection: "column", overflow: "hidden", position: "relative",
+          background: SURFACE, borderRadius: "24px",
+          boxShadow: "0 12px 32px rgba(0,0,0,0.06)",
         }}
       >
         {/* chat titlebar */}
-        <Box sx={{ borderBottom: `1px solid ${CYAN}44`, px: 2, py: 0.75, display: "flex", justifyContent: "space-between", alignItems: "center", background: BLACK }}>
-          <Typography sx={{ fontFamily: MONO, fontSize: "10px", letterSpacing: "2px", color: CYAN }}>
-            AI_CORE.EXE &nbsp;—&nbsp; GROQ LLAMA 3.3 70B
+        <Box sx={{ borderBottom: `1px solid ${BORDER_SOFT}`, px: 3, py: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Typography sx={{ fontFamily: SANS, fontWeight: 600, fontSize: "14px", letterSpacing: "-0.1px", color: TEXT_INK }}>
+            Assistant
           </Typography>
-          <Typography sx={{ fontFamily: MONO, fontSize: "10px", letterSpacing: "2px", color: RED, animation: "ttoBlink 1.5s step-end infinite" }}>
-            ▌ LIVE
+          <Typography sx={{ fontFamily: SANS, fontSize: "11px", fontWeight: 500, letterSpacing: "0.2px", color: TEXT_MUTED, display: "flex", alignItems: "center", gap: "6px" }}>
+            <Box component="span" sx={{ width: 6, height: 6, borderRadius: "50%", background: ACCENT, display: "inline-block" }} />
+            Live
           </Typography>
         </Box>
 
@@ -284,11 +296,11 @@ const Chat = () => {
           onScroll={handleMessagesScroll}
           sx={{
             flex: 1, overflowY: "auto", overflowX: "hidden",
-            px: 3, py: 2, display: "flex", flexDirection: "column",
-            gap: "20px", position: "relative",
+            px: 3, py: 2.5, display: "flex", flexDirection: "column",
+            gap: "18px", position: "relative",
             "&::-webkit-scrollbar": { width: "4px" },
-            "&::-webkit-scrollbar-track": { background: BLACK },
-            "&::-webkit-scrollbar-thumb": { background: `${CYAN}44`, borderRadius: 0 },
+            "&::-webkit-scrollbar-track": { background: "transparent" },
+            "&::-webkit-scrollbar-thumb": { background: BORDER_SOFT, borderRadius: "4px" },
           }}
         >
           {chatMessages.map((chat, index) => (
@@ -296,24 +308,17 @@ const Chat = () => {
               key={index}
               sx={{ display: "flex", flexDirection: "column", alignItems: chat.role === "user" ? "flex-end" : "flex-start", width: "100%" }}
             >
-              <Typography sx={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "2px", color: chat.role === "user" ? `${AMBER}99` : `${CYAN}77`, mb: "4px", px: "2px" }}>
-                {chat.role === "user" ? "> USR" : "AI >"}
-              </Typography>
-
               <Box
                 sx={{
                   width: chat.role === "assistant" ? "100%" : "auto",
                   maxWidth: chat.role === "assistant" ? "100%" : "70%",
                   wordBreak: "break-word", overflowWrap: "break-word",
-                  border: chat.role === "user" ? `1px solid ${AMBER}66` : `1px solid ${CYAN}33`,
-                  background: chat.role === "user" ? `rgba(255,170,0,0.06)` : `rgba(0,255,204,0.03)`,
-                  boxShadow: chat.role === "user" ? `0 0 8px ${AMBER}22` : `0 0 8px ${CYAN}11`,
-                  px: 2, py: 1.5,
+                  borderRadius: chat.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                  background: chat.role === "user" ? CARD : "#F5F4EF",
+                  px: 2.25, py: 1.5,
                 }}
               >
                 {(() => {
-                  // Only split on ``` if the message has fenced code.
-                  // Odd-indexed blocks = code, even-indexed = plain text.
                   const hasFence = chat.content.includes("```");
                   const blocks   = hasFence ? chat.content.split("```") : [chat.content];
                   return blocks.map((block, idx) => {
@@ -324,7 +329,7 @@ const Chat = () => {
                       const code  = lines.slice(1).join("\n");
                       return (
                         <SyntaxHighlighter key={idx} language={lang} style={coldarkCold}
-                          customStyle={{ border: `1px solid ${CYAN}33`, background: "#050e0c", fontFamily: MONO, fontSize: "12px", margin: "8px 0", overflowX: "auto", maxWidth: "100%", whiteSpace: "pre", borderRadius: 0 }}>
+                          customStyle={{ borderRadius: "10px", fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", margin: "8px 0", overflowX: "auto", maxWidth: "100%", whiteSpace: "pre" }}>
                           {code}
                         </SyntaxHighlighter>
                       );
@@ -332,7 +337,7 @@ const Chat = () => {
                     if (!block.trim()) return null;
                     return (
                       <Typography key={idx}
-                        sx={{ fontFamily: MONO, fontSize: "13px", letterSpacing: "0.3px", lineHeight: 1.8, color: chat.role === "user" ? AMBER : BODY, wordBreak: "break-word", overflowWrap: "break-word", whiteSpace: "pre-wrap" }}>
+                        sx={{ fontFamily: SANS, fontSize: "14px", letterSpacing: "0.1px", lineHeight: 1.65, color: chat.role === "user" ? TEXT_PAPER : TEXT_INK, wordBreak: "break-word", overflowWrap: "break-word", whiteSpace: "pre-wrap" }}>
                         {block}
                       </Typography>
                     );
@@ -342,7 +347,6 @@ const Chat = () => {
             </Box>
           ))}
 
-          {/* Invisible anchor — scrollIntoView targets this */}
           <div ref={messagesEndRef} style={{ height: 0 }} />
         </Box>
 
@@ -351,72 +355,53 @@ const Chat = () => {
           <Box
             onClick={scrollToBottom}
             sx={{
-              position: "absolute", bottom: "72px", right: "24px", zIndex: 10,
-              width: "36px", height: "36px", border: `1.5px solid ${CYAN}`,
-              background: BLACK, boxShadow: `0 0 12px ${CYAN}66`,
+              position: "absolute", bottom: "88px", right: "28px", zIndex: 10,
+              width: "38px", height: "38px", borderRadius: "50%",
+              background: CARD, boxShadow: "0 6px 18px rgba(0,0,0,0.18)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "pointer", animation: "ttoPulse 2s infinite", transition: "all 0.15s",
-              "&:hover": { background: `${CYAN}22`, boxShadow: `0 0 20px ${CYAN}99` },
+              cursor: "pointer", transition: "transform 0.15s",
+              "&:hover": { transform: "translateY(-2px)" },
             }}
           >
-            <KeyboardArrowDownIcon sx={{ color: CYAN, fontSize: "20px" }} />
+            <KeyboardArrowDownIcon sx={{ color: TEXT_PAPER, fontSize: "20px" }} />
           </Box>
         )}
 
         {/* ── INPUT AREA ── */}
         <Box
           sx={{
-            borderTop: `2px solid ${CYAN}`, boxShadow: `0 -2px 12px ${CYAN}22`,
-            px: 2, py: 1.5, display: "flex", gap: "10px", alignItems: "center", background: BLACK,
+            px: 3, py: 2.5, display: "flex", gap: "10px", alignItems: "center",
           }}
         >
-          <Typography sx={{ fontFamily: MONO, fontSize: "13px", color: CYAN, letterSpacing: "1px", whiteSpace: "nowrap" }}>
-            &gt;_
-          </Typography>
-
           <TextField
             inputRef={inputRef}
             fullWidth
             variant="outlined"
-            placeholder="ENTER COMMAND..."
-            // Track value in state so the send button reacts instantly
+            placeholder="Message the assistant…"
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && inputValue.trim()) handleSend(); }}
             sx={{
               "& .MuiOutlinedInput-root": {
-                background: "transparent", borderRadius: 0,
-                "& fieldset": { border: `1px solid ${CYAN}44` },
-                "&:hover fieldset": { border: `1px solid ${CYAN}88` },
-                "&.Mui-focused fieldset": { border: `1px solid ${CYAN}` },
+                background: "#F5F4EF", borderRadius: "999px",
+                "& fieldset": { border: "none" },
               },
               "& .MuiInputBase-input": {
-                color: BODY, fontFamily: MONO, fontSize: "13px", letterSpacing: "1px", py: "10px",
-                "&::placeholder": { color: `${CYAN}44`, fontFamily: MONO },
-                "&:-webkit-autofill": { WebkitBoxShadow: `0 0 0 100px ${BLACK} inset`, WebkitTextFillColor: BODY },
+                color: TEXT_INK, fontFamily: SANS, fontSize: "14px", letterSpacing: "0.1px", py: "13px", px: "8px",
+                "&::placeholder": { color: TEXT_MUTED, opacity: 1 },
               },
             }}
           />
 
-          {/* Send button — disabled when input is empty/whitespace only */}
           <IconButton
             onClick={handleSend}
             disabled={!inputValue.trim()}
             sx={{
-              border: `1.5px solid ${inputValue.trim() ? CYAN : `${CYAN}33`}`,
-              borderRadius: 0,
-              color: inputValue.trim() ? CYAN : `${CYAN}33`,
-              p: "8px",
-              boxShadow: inputValue.trim() ? `0 0 8px ${CYAN}33` : "none",
+              width: "44px", height: "44px", borderRadius: "50%",
+              background: inputValue.trim() ? CARD : "#EDEBE3",
+              color: inputValue.trim() ? TEXT_PAPER : TEXT_MUTED,
               transition: "all 0.15s",
-              "&:hover": {
-                background: inputValue.trim() ? `${CYAN}18` : "transparent",
-                boxShadow: inputValue.trim() ? `0 0 14px ${CYAN}66` : "none",
-              },
-              "&.Mui-disabled": {
-                // Override MUI's default grey — keep the retro dim-cyan look
-                color: `${CYAN}33`,
-                border: `1.5px solid ${CYAN}22`,
-              },
+              "&:hover": { background: inputValue.trim() ? "#000" : "#EDEBE3" },
+              "&.Mui-disabled": { color: TEXT_MUTED },
             }}
           >
             <SendIcon sx={{ fontSize: "18px" }} />

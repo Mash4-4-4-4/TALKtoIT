@@ -1,4 +1,5 @@
 import { StrictMode } from 'react'
+import "highlight.js/styles/github.css";
 import { createRoot } from 'react-dom/client'
 import {createTheme ,ThemeProvider} from "@mui/material/styles";
 import './index.css'

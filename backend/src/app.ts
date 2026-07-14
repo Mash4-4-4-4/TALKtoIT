@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import appRouter from "./routes/Router";
+import { errorHnadler } from "./middleware/errorHandler";
 
 const app = express();
 
@@ -32,5 +33,6 @@ app.use(
 app.use(morgan("dev"));
 
 app.use("/api/v1", appRouter);
+app.use(errorHnadler);
 
 export default app;

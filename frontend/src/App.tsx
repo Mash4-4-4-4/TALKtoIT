@@ -7,6 +7,7 @@ import {Routes,Route} from "react-router-dom";
 import Signup from "./pages/Signup";
 import { useAuth } from "./context/AuthContext";
 import PdfChat from "./pages/PdfChat";
+import RepoChat from "./pages/RepoChat";
 function App() {
   return (
     <>
@@ -20,6 +21,7 @@ function App() {
           <Route path="/notfound" element={<NotFound/>}></Route>
           <Route path="/chat" element={<Chat/>}></Route>
           <Route path="/pdf"element={<PdfChat/>} ></Route>
+          <Route path="/repo" element={<RepoChat/>} ></Route>
         </Routes>
        </main>
     </>

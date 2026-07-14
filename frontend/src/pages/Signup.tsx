@@ -7,12 +7,13 @@ import { toast } from "react-hot-toast"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from '../context/AuthContext'
 
-const CYAN  = "#00ffcc";
-const RED   = "#ff2244";
-const BLACK = "#000000";
-const BODY  = "#c8f0e8";
-const MONO  = "'Share Tech Mono', 'Courier New', monospace";
-const PIXEL = "'VT323', 'Courier New', monospace";
+// ── design tokens ── minimalist dark-card aesthetic ─────────────────────────
+const PAGE_BG   = "#F3F1EC";
+const CARD      = "#18181A";
+const TEXT_INK  = "#17171A";
+const TEXT_PAPER = "#F6F5F1";
+const TEXT_PAPER_DIM = "#9C9B9E";
+const SANS = "'Inter', -apple-system, 'Segoe UI', sans-serif";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -44,271 +45,118 @@ const Signup = () => {
         width: "100%",
         minHeight: "100vh",
         display: "flex",
-        flexDirection: "row",
-        backgroundColor: BLACK,
-        overflow: "hidden",
-        /* scanlines */
-        "&::before": {
-          content: '""',
-          position: "fixed",
-          inset: 0,
-          background:
-            "repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,200,0.012) 2px,rgba(0,255,200,0.012) 4px)",
-          pointerEvents: "none",
-          zIndex: 0,
-        },
-        "@keyframes ttoBlink": {
-          "0%,100%": { opacity: 1 },
-          "50%":     { opacity: 0 },
-        },
-        "@keyframes ttoGlow": {
-          "0%,100%": { boxShadow: `0 0 8px ${CYAN}66` },
-          "50%":     { boxShadow: `0 0 18px ${CYAN}cc` },
-        },
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: PAGE_BG,
+        fontFamily: SANS,
+        p: 2,
       }}
     >
-      {/* ── LEFT: FORM ── */}
       <Box
+        component="form"
+        onSubmit={handleSubmit}
         sx={{
-          flex: 1,
           display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          position: "relative",
-          zIndex: 1,
+          flexDirection: "column",
+          gap: "20px",
+          width: "380px",
+          padding: "40px 36px",
+          borderRadius: "28px",
+          background: CARD,
+          boxShadow: "0 20px 48px rgba(0,0,0,0.16)",
         }}
       >
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "18px",
-            width: "340px",
-            padding: "36px 32px",
-            border: `1.5px solid ${CYAN}`,
-            boxShadow: `0 0 24px ${CYAN}33, inset 0 0 8px ${CYAN}08`,
-            background: "rgba(0,255,204,0.03)",
-            position: "relative",
-          }}
-        >
-          {/* window titlebar */}
-          <Box
+        {/* heading */}
+        <Box>
+          <Typography
             sx={{
-              position: "absolute",
-              top: 0, left: 0, right: 0,
-              borderBottom: `1px solid ${CYAN}44`,
-              px: 1.5, py: 0.5,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
+              fontFamily: SANS,
+              fontWeight: 800,
+              fontSize: "28px",
+              color: TEXT_PAPER,
+              letterSpacing: "-0.5px",
+              lineHeight: 1.1,
             }}
           >
-            <Typography sx={{ fontFamily: MONO, fontSize: "10px", letterSpacing: "2px", color: CYAN }}>
-              USER_REGISTER.EXE
-            </Typography>
-            <Box sx={{ display: "flex", gap: "4px" }}>
-              {[0, 1, 2].map((i) => (
-                <Box key={i} sx={{ width: 7, height: 7, border: `1px solid ${CYAN}` }} />
-              ))}
+            Create account
+          </Typography>
+          <Typography
+            sx={{
+              fontFamily: SANS,
+              fontSize: "13px",
+              fontWeight: 500,
+              color: TEXT_PAPER_DIM,
+              mt: "6px",
+            }}
+          >
+            Set up your TalkToIt workspace
+          </Typography>
+        </Box>
+
+        {/* fields */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: "12px", mt: "4px" }}>
+          {[
+            { type: "text",     name: "name",     label: "Name"     },
+            { type: "email",    name: "email",    label: "Email"    },
+            { type: "password", name: "password", label: "Password" },
+          ].map(({ type, name, label }) => (
+            <Box
+              key={name}
+              sx={{
+                borderRadius: "14px",
+                background: "#222224",
+                "&:focus-within": { boxShadow: "0 0 0 2px #F6F5F1" },
+                "& .MuiOutlinedInput-notchedOutline": { border: "none !important" },
+                "& .MuiInputLabel-root": { fontFamily: `${SANS} !important`, fontSize: "13px !important", color: `${TEXT_PAPER_DIM} !important` },
+                "& .MuiInputBase-input": { color: `${TEXT_PAPER} !important`, fontFamily: `${SANS} !important`, fontSize: "14px !important", padding: "14px !important" },
+              }}
+            >
+              <CustomizedInput type={type} name={name} label={label} />
             </Box>
-          </Box>
-
-          {/* spacer for titlebar */}
-          <Box sx={{ mt: "20px" }} />
-
-          {/* heading */}
-          <Typography
-            sx={{
-              fontFamily: PIXEL,
-              fontSize: "42px",
-              color: CYAN,
-              letterSpacing: "4px",
-              lineHeight: 1,
-              textAlign: "center",
-              textShadow: `0 0 12px ${CYAN}88`,
-            }}
-          >
-            SIGN UP
-          </Typography>
-
-          <Typography
-            sx={{
-              fontFamily: MONO,
-              fontSize: "10px",
-              letterSpacing: "2px",
-              color: `${CYAN}99`,
-              textAlign: "center",
-              animation: "ttoBlink 2s step-end infinite",
-            }}
-          >
-            ▌ CREATE NEW USER ACCOUNT ▌
-          </Typography>
-
-          {/* fields */}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: "14px", mt: "4px" }}>
-            {/* field label style */}
-            {[
-              { type: "text",     name: "name",     label: "NAME" },
-              { type: "email",    name: "email",    label: "EMAIL" },
-              { type: "password", name: "password", label: "PASSWORD" },
-            ].map(({ type, name, label }) => (
-              <Box key={name}>
-                <Typography
-                  sx={{
-                    fontFamily: MONO,
-                    fontSize: "9px",
-                    letterSpacing: "2px",
-                    color: `${CYAN}99`,
-                    mb: "4px",
-                  }}
-                >
-                
-                </Typography>
-                <Box
-                  sx={{
-                    border: `1px solid ${CYAN}55`,
-                    "&:focus-within": {
-                      border: `1px solid ${CYAN}`,
-                      boxShadow: `0 0 8px ${CYAN}44`,
-                    },
-                    "& input": {
-                      background: "transparent",
-                      color: BODY,
-                      fontFamily: MONO,
-                      fontSize: "13px",
-                      letterSpacing: "1px",
-                      border: "none",
-                      outline: "none",
-                      width: "100%",
-                      padding: "8px 10px",
-                    },
-                    "& label": { color: `${CYAN}77 !important` },
-                    "& .MuiOutlinedInput-notchedOutline": { border: "none !important" },
-                    "& .MuiInputLabel-root": { fontFamily: `${MONO} !important`, fontSize: "12px !important", letterSpacing: "1px" },
-                    "& .MuiInputBase-input": { color: `${BODY} !important`, fontFamily: `${MONO} !important`, fontSize: "13px !important" },
-                  }}
-                >
-                  <CustomizedInput type={type} name={name} label={label} />
-                </Box>
-              </Box>
-            ))}
-          </Box>
-
-          {/* submit button */}
-          <Box
-            component="button"
-            type="submit"
-            sx={{
-              mt: "8px",
-              width: "100%",
-              border: `1.5px solid ${RED}`,
-              background: "transparent",
-              color: RED,
-              fontFamily: MONO,
-              fontSize: "12px",
-              letterSpacing: "3px",
-              textTransform: "uppercase",
-              py: "10px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              boxShadow: `0 0 8px ${RED}44`,
-              transition: "all 0.15s",
-              animation: "ttoGlow 2s ease-in-out infinite",
-              "@keyframes ttoGlow": {
-                "0%,100%": { boxShadow: `0 0 6px ${RED}44` },
-                "50%":     { boxShadow: `0 0 16px ${RED}99` },
-              },
-              "&:hover": {
-                background: `${RED}18`,
-                boxShadow: `0 0 20px ${RED}88`,
-              },
-            }}
-          >
-            INITIALIZE ACCOUNT
-            <IoIosLogIn size={18} />
-          </Box>
-
-          {/* bottom status */}
-          <Typography
-            sx={{
-              fontFamily: MONO,
-              fontSize: "9px",
-              color: `${CYAN}55`,
-              letterSpacing: "1px",
-              textAlign: "center",
-              mt: "-4px",
-            }}
-          >
-            TALKTOIT OS v1.0 &nbsp;|&nbsp; SECURE CHANNEL
-          </Typography>
+          ))}
         </Box>
-      </Box>
 
-      {/* ── RIGHT: IMAGE ── */}
-      <Box
-        sx={{
-          flex: 1,
-          display: { xs: "none", md: "flex" },
-          justifyContent: "center",
-          alignItems: "center",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        {/* neon frame around image */}
+        {/* submit button */}
         <Box
+          component="button"
+          type="submit"
           sx={{
-            border: `1.5px solid ${CYAN}44`,
-            boxShadow: `0 0 30px ${CYAN}22`,
-            p: "6px",
-            position: "relative",
+            mt: "8px",
+            width: "100%",
+            border: "none",
+            borderRadius: "999px",
+            background: TEXT_PAPER,
+            color: TEXT_INK,
+            fontFamily: SANS,
+            fontSize: "14px",
+            fontWeight: 700,
+            letterSpacing: "0.1px",
+            py: "13px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            transition: "opacity 0.15s",
+            "&:hover": { opacity: 0.88 },
           }}
         >
-          {/* corner accents */}
-          {["top left", "top right", "bottom left", "bottom right"].map((pos) => {
-            const [v, h] = pos.split(" ");
-            return (
-              <Box
-                key={pos}
-                sx={{
-                  position: "absolute",
-                  [v]: -2, [h]: -2,
-                  width: 16, height: 16,
-                  borderTop:    v === "top"    ? `2px solid ${CYAN}` : "none",
-                  borderBottom: v === "bottom" ? `2px solid ${CYAN}` : "none",
-                  borderLeft:   h === "left"   ? `2px solid ${CYAN}` : "none",
-                  borderRight:  h === "right"  ? `2px solid ${CYAN}` : "none",
-                }}
-              />
-            );
-          })}
-          <img
-            src="login.png"
-            alt="signup visual"
-            style={{
-              width: "100%",
-              maxWidth: "420px",
-              height: "auto",
-              display: "block",
-              filter: "brightness(0.85) contrast(1.1)",
-            }}
-          />
-          {/* scan overlay on image */}
-          <Box
-            sx={{
-              position: "absolute",
-              inset: "6px",
-              background:
-                "repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,255,204,0.03) 3px,rgba(0,255,204,0.03) 4px)",
-              pointerEvents: "none",
-            }}
-          />
+          Create account
+          <IoIosLogIn size={18} />
         </Box>
+
+        {/* bottom status */}
+        <Typography
+          sx={{
+            fontFamily: SANS,
+            fontSize: "11px",
+            color: TEXT_PAPER_DIM,
+            textAlign: "center",
+            mt: "-6px",
+          }}
+        >
+          TalkToIt &nbsp;·&nbsp; Secure channel
+        </Typography>
       </Box>
     </Box>
   );

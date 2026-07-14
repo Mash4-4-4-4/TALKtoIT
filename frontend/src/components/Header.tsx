@@ -118,8 +118,18 @@ const Header = () => {
             <>
               <NeonNavButton
                 to="/chat"
-                text="GO TO CHAT"
+                text="AI CHAT"
                 accent={CYAN}
+              />
+              <NeonNavButton
+                to="/pdf"
+                text="PDF CHAT"
+                accent={AMBER}
+              />
+              <NeonNavButton
+                to="/repo"
+                text="REPO CHAT"
+                accent={GREEN}
               />
               <NeonNavButton
                 to="/"

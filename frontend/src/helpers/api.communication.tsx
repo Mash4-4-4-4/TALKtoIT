@@ -130,3 +130,70 @@ export const askPdfQuestion=async(
   );
   return res.data;
 }
+
+export const uploadRepo = async (
+  formData: FormData
+) => {
+  const res = await axios.post(
+    "/repo/upload",
+    formData,
+    {
+      headers: {
+        "Content-Type":
+          "multipart/form-data",
+      },
+    }
+  );
+
+  return res.data;
+};
+
+export const getAllRepos = async () => {
+  const res = await axios.get(
+    "/repo/all"
+  );
+
+  return res.data;
+};
+
+export const askRepoQuestion = async (
+  repoId: string,
+  question: string
+) => {
+  const res = await axios.post(
+    "/repo/chat",
+    {
+      repoId,
+      question,
+    }
+  );
+  return res.data;
+};
+
+export const deleteRepo = async (
+  repoId: string
+) => {
+  const res = await axios.delete(
+    `/repo/${repoId}`
+  );
+  return res.data;
+};
+export const getRepoChatHistory = async (repoId: string) => {
+  const res = await axios.get(`/repo/${repoId}/history`);
+  return res.data;
+};
+
+export const clearRepoChatHistory = async (repoId: string) => {
+  const res = await axios.delete(`/repo/${repoId}/history`);
+  return res.data;
+};
+
+export const getRepoTree = async (repoId: string) => {
+  const res = await axios.get(`/repo/${repoId}/tree`);
+  return res.data;
+};
+
+export const getRepoFile = async (repoId: string, filePath: string) => {
+  const res = await axios.get(`/repo/${repoId}/file`, { params: { path: filePath } });
+  return res.data;
+};
