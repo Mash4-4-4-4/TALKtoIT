@@ -66,7 +66,7 @@ export const uploadRepo = async (req: Request, res: Response) => {
 
         processedFilesCount++;
 
-        // Process in small batches of 5 to run concurrently and speed it up
+        // Process in small batches of 2 to run concurrently and speed it up
         const BATCH_SIZE = 2;
         for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
           const batch = chunks.slice(i, i + BATCH_SIZE);

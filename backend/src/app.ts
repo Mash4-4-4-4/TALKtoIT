@@ -2,7 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-
+import googleAuthRoutes from "./routes/googleAuth";
 import appRouter from "./routes/Router";
 import { errorHnadler } from "./middleware/errorHandler";
 
@@ -33,6 +33,7 @@ app.use(
 app.use(morgan("dev"));
 
 app.use("/api/v1", appRouter);
-app.use(errorHnadler);
+app.use('/api/v1/auth', googleAuthRoutes);
 
+app.use(errorHnadler);
 export default app;

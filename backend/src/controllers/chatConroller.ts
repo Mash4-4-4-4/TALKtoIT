@@ -23,7 +23,7 @@ export const generateChatCopmleteion = async (
 
         // convert chats into AI format
 const chats: OpenAI.Chat.ChatCompletionMessageParam[] =
-    User.chats.map(({ role, content }) => ({
+    User.chats.map(({ role, content }: { role: string; content: string }) => ({
         role: role as "user" | "assistant",
         content,
     }));

@@ -68,7 +68,13 @@ export const UserLogin= async (req:Request,res:Response,next:NextFunction)=>
     {
       return res.status(401).send("user not registered");
     }
-   const isPasswordCorrect=await compare(password,existingUser!.password);
+if (!existingUser!.password) {
+  return res.status(400).json({ 
+    error: 'This account uses Google Sign-In. Please log in with Google.' 
+  });
+}
+
+const isPasswordCorrect = await compare(password, existingUser!.password);
    if(!isPasswordCorrect){
      return res.status(401).send("incorrect password")
    }

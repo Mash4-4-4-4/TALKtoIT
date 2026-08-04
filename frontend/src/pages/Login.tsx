@@ -8,7 +8,7 @@ import { toast } from "react-hot-toast"
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext'
 import { loginUser } from '../helpers/api.communication'
-
+import GoogleLoginButton from '../components/GoogleLoginButton'
 // ── design tokens ── minimalist dark-card aesthetic ─────────────────────────
 const PAGE_BG   = "#F3F1EC";
 const CARD      = "#18181A";
@@ -145,6 +145,15 @@ const Login = () => {
           Log in
           <IoIosLogIn size={18} />
         </Box>
+<Box sx={{ display: "flex", alignItems: "center", gap: "10px", my: "4px" }}>
+          <Box sx={{ flex: 1, height: "1px", background: "#2A2A2C" }} />
+          <Typography sx={{ fontFamily: SANS, fontSize: "11px", color: TEXT_PAPER_DIM }}>
+            or
+          </Typography>
+          <Box sx={{ flex: 1, height: "1px", background: "#2A2A2C" }} />
+        </Box>
+
+        <GoogleLoginButton />
 
         {/* bottom status */}
         <Typography
