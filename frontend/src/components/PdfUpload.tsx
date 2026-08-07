@@ -5,14 +5,11 @@ import {
   getPdfText,
   getAllPdfs,
 } from "../helpers/api.communication";
+import { toast } from "react-hot-toast";
 
 // ── theme tokens (same as rest of app) ────────────────────────────────────────
 const CYAN  = "#00ffcc";
 const AMBER = "#ffaa00";
-const GREEN = "#00ff41";
-const RED   = "#ff2244";
-const BLACK = "#000000";
-const BODY  = "#c8f0e8";
 const MONO  = "'Share Tech Mono', 'Courier New', monospace";
 
 type PdfType = { _id: string; pdf: string };
@@ -23,8 +20,7 @@ type Props = {
 };
 
 const PdfUpload = ({ fetchPdfs, setSelectedPdf }: Props) => {
-  const [file,    setFile   ] = useState<File | null>(null);
-  const [allpdfs, setAllpdfs] = useState<any[]>([]);
+  const [file, setFile] = useState<File | null>(null);
 
   // ── logic unchanged ────────────────────────────────────────────────────────
   const showPdf = (pdf: string) => {
@@ -35,18 +31,22 @@ const PdfUpload = ({ fetchPdfs, setSelectedPdf }: Props) => {
   const getPdf = async () => {
     try {
       const data = await getAllPdfs();
-      setAllpdfs(data.pdfs);
       if (data.pdfs.length > 0) {
         showPdf(data.pdfs[data.pdfs.length - 1].pdf);
+      } else {
+        toast("No PDFs uploaded yet.", { icon: "📄" });
       }
     } catch (error) {
       console.log(error);
+      toast.error("Couldn't load your PDFs. Please try again.");
     }
   };
 
   const handleFileSend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!file) { alert("Please select a PDF first"); return; }
+    if (!file) { toast.error("Please select a PDF file first."); return; }
+    if (!file.name.toLowerCase().endsWith(".pdf")) { toast.error("Only .pdf files are supported."); return; }
+    const toastId = toast.loading(`Uploading "${file.name}"…`);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -56,8 +56,11 @@ const PdfUpload = ({ fetchPdfs, setSelectedPdf }: Props) => {
       const text = await getPdfText(formData);
       console.log("PDF Text:");
       console.log(text);
+      toast.success(`"${file.name}" uploaded — you can start asking questions.`, { id: toastId });
+      setFile(null);
     } catch (error) {
       console.log(error);
+      toast.error("Couldn't upload that PDF. Please try again.", { id: toastId });
     }
   };
 

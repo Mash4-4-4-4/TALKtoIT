@@ -7,6 +7,71 @@ export const extractZip = (zipFilePath: string, destPath: string) => {
   zip.extractAllTo(destPath, true);
 };
 
+/**
+ * Parses a GitHub repo URL (with or without .git, with or without a branch
+ * path) into { owner, repo }. Returns null if it doesn't look like a valid
+ * GitHub repo URL.
+ */
+export const parseGithubUrl = (
+  url: string
+): { owner: string; repo: string } | null => {
+  try {
+    const cleaned = url.trim().replace(/\/+$/, "");
+    const match = cleaned.match(
+      /github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?(?:\/.*)?$/i
+    );
+    if (!match) return null;
+    const [, owner, repo] = match;
+    if (!owner || !repo) return null;
+    return { owner, repo };
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Downloads a public GitHub repository as a zip archive (via GitHub's
+ * codeload service) and saves it to destZipPath. Tries the "main" branch
+ * first, then falls back to "master" since older repos still use it.
+ */
+export const downloadGithubRepoZip = async (
+  githubUrl: string,
+  destZipPath: string
+): Promise<{ owner: string; repo: string; branch: string }> => {
+  const parsed = parseGithubUrl(githubUrl);
+  if (!parsed) {
+    throw new Error(
+      "That doesn't look like a valid GitHub repository URL. Expected something like https://github.com/owner/repo"
+    );
+  }
+  const { owner, repo } = parsed;
+
+  const branchesToTry = ["main", "master"];
+  let lastError: Error | null = null;
+
+  for (const branch of branchesToTry) {
+    const zipUrl = `https://codeload.github.com/${owner}/${repo}/zip/refs/heads/${branch}`;
+    try {
+      const response = await fetch(zipUrl);
+      if (!response.ok) {
+        lastError = new Error(
+          `GitHub returned ${response.status} for branch "${branch}"`
+        );
+        continue;
+      }
+      const arrayBuffer = await response.arrayBuffer();
+      fs.writeFileSync(destZipPath, Buffer.from(arrayBuffer));
+      return { owner, repo, branch };
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
+  throw new Error(
+    `Could not download "${owner}/${repo}" from GitHub. Please make sure the repository exists, is public, and the link is correct. (${lastError?.message ?? "unknown error"})`
+  );
+};
+
 export const getFilesRecursively = (
   dir: string,
   baseDir: string = dir

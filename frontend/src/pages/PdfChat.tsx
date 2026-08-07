@@ -11,22 +11,10 @@ import { SendIcon } from 'lucide-react';
 import { askPdfQuestion } from '../helpers/api.communication';
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import DeleteIcon from "@mui/icons-material/Delete";
-
-// ── design tokens ── minimalist dark-card aesthetic ─────────────────────────
-const PAGE_BG        = "#F3F1EC";
-const CARD           = "#18181A";
-const CARD_ALT       = "#222224";
-const SURFACE        = "#FFFFFF";
-const BORDER_SOFT     = "#E8E5DC";
-const BORDER_DARK     = "#333335";
-const TEXT_INK        = "#17171A";
-const TEXT_MUTED      = "#8B8A84";
-const TEXT_PAPER      = "#F6F5F1";
-const TEXT_PAPER_DIM  = "#9C9B9E";
-const ACCENT          = "#7C9473";
-const ACCENT_WARN     = "#C98A4B";
-const ACCENT_DANGER   = "#B95C50";
-const SANS = "'Inter', -apple-system, 'Segoe UI', sans-serif";
+import { toast } from "react-hot-toast";
+import { useAppTheme } from "../context/ThemeContext";
+import ThinkingIndicator from "../components/shared/ThinkingIndicator";
+import { confirmToast } from "../components/shared/ConfirmToast";
 
 type PdfType   = { _id: string; pdf: string };
 type Message   = { role: "user" | "assistant"; content: string };
@@ -36,6 +24,8 @@ const pdfChatHistory = new Map<string, Message[]>();
 
 const PdfChat = () => {
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const { tokens } = useAppTheme();
+  const { PAGE_BG, CARD, CARD_ALT, SURFACE, SURFACE_ALT, SURFACE_MUTED, BORDER_SOFT, BORDER_DARK, TEXT_INK, TEXT_MUTED, TEXT_PAPER, TEXT_PAPER_DIM, ACCENT, SANS } = tokens;
 
   const [pdfs,        setPdfs       ] = useState<PdfType[]>([]);
   const [selectedpdf, setSelectedPdf] = useState<PdfType | null>(null);
@@ -53,7 +43,10 @@ const PdfChat = () => {
     try {
       const result = await axios.get("http://localhost:5000/api/v1/pdf/all");
       setPdfs(result.data.pdfs);
-    } catch (error) { console.log(error); }
+    } catch (error) {
+      console.log(error);
+      toast.error("Couldn't load your documents. Please refresh and try again.");
+    }
   };
 
   useEffect(() => { fetchPdfs(); }, []);
@@ -73,7 +66,10 @@ const PdfChat = () => {
 
   const handleSend = async () => {
     try {
-      if (!selectedpdf) { alert("Select a PDF first"); return; }
+      if (!selectedpdf) {
+        toast.error("Select a document from the sidebar before asking a question.");
+        return;
+      }
       const question = inputRef.current?.value?.trim();
       if (!question) return;
       const userMessage: Message = { role: "user", content: question };
@@ -88,6 +84,7 @@ const PdfChat = () => {
     } catch (error) {
       console.log(error);
       setLoading(false);
+      toast.error("Couldn't get an answer for that question. Please try again.");
     }
   };
 
@@ -96,17 +93,21 @@ const PdfChat = () => {
     pdf: PdfType
   ) => {
     e.stopPropagation();
-    try {
-      await axios.delete(`http://localhost:5000/api/v1/pdf/${pdf._id}`);
-      pdfChatHistory.delete(pdf._id);
-      if (selectedpdf?._id === pdf._id) {
-        setSelectedPdf(null);
-        setMessages([]);
+    confirmToast(tokens, `Delete "${pdf.pdf}"? This can't be undone.`, async () => {
+      try {
+        await axios.delete(`http://localhost:5000/api/v1/pdf/${pdf._id}`);
+        pdfChatHistory.delete(pdf._id);
+        if (selectedpdf?._id === pdf._id) {
+          setSelectedPdf(null);
+          setMessages([]);
+        }
+        await fetchPdfs();
+        toast.success(`"${pdf.pdf}" was deleted.`);
+      } catch (error) {
+        console.log(error);
+        toast.error(`Couldn't delete "${pdf.pdf}". Please try again.`);
       }
-      await fetchPdfs();
-    } catch (error) {
-      console.log(error);
-    }
+    });
   };
 
   // ── scroll helpers (unchanged) ─────────────────────────────────────────────
@@ -124,7 +125,7 @@ const PdfChat = () => {
     const el = messagesBoxRef.current;
     if (!el) return;
     if (el.scrollHeight - el.scrollTop - el.clientHeight < 200) scrollToBottom();
-  }, [messages]);
+  }, [messages, loading]);
 
   // ── render ─────────────────────────────────────────────────────────────────
   return (
@@ -289,7 +290,8 @@ const PdfChat = () => {
                 maxWidth: message.role === "assistant" ? "100%" : "70%",
                 wordBreak: "break-word", overflowWrap: "break-word",
                 borderRadius: message.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                background: message.role === "user" ? CARD : "#F5F4EF",
+                background: message.role === "user" ? CARD : SURFACE_ALT,
+                transition: "background 0.2s ease",
                 px: 2.25, py: 1.5,
               }}>
                 <Typography sx={{ fontFamily: SANS, fontSize: "14px", letterSpacing: "0.1px", lineHeight: 1.65, color: message.role === "user" ? TEXT_PAPER : TEXT_INK, wordBreak: "break-word", overflowWrap: "break-word", whiteSpace: "pre-wrap" }}>
@@ -301,13 +303,7 @@ const PdfChat = () => {
 
           {/* thinking indicator */}
           {loading && (
-            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "100%" }}>
-              <Box sx={{ borderRadius: "18px 18px 18px 4px", background: "#F5F4EF", px: 2.25, py: 1.5 }}>
-                <Typography sx={{ fontFamily: SANS, fontSize: "14px", color: TEXT_MUTED }}>
-                  Reading the document…
-                </Typography>
-              </Box>
-            </Box>
+            <ThinkingIndicator labels={["Reading the document", "Thinking", "Replying"]} />
           )}
 
           <div ref={messagesEndRef} style={{ height: 0 }} />
@@ -329,7 +325,7 @@ const PdfChat = () => {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && inputValue.trim() && !loading) handleSend(); }}
             sx={{
-              "& .MuiOutlinedInput-root": { background: "#F5F4EF", borderRadius: "999px", "& fieldset": { border: "none" } },
+              "& .MuiOutlinedInput-root": { background: SURFACE_ALT, borderRadius: "999px", transition: "background 0.2s ease", "& fieldset": { border: "none" } },
               "& .MuiInputBase-input": { color: TEXT_INK, fontFamily: SANS, fontSize: "14px", letterSpacing: "0.1px", py: "13px", px: "8px", "&::placeholder": { color: TEXT_MUTED, opacity: 1 } },
             }}
           />
@@ -338,10 +334,10 @@ const PdfChat = () => {
             disabled={!inputValue.trim() || loading || !selectedpdf}
             sx={{
               width: "44px", height: "44px", borderRadius: "50%",
-              background: (!inputValue.trim() || loading || !selectedpdf) ? "#EDEBE3" : CARD,
+              background: (!inputValue.trim() || loading || !selectedpdf) ? SURFACE_MUTED : CARD,
               color: (!inputValue.trim() || loading || !selectedpdf) ? TEXT_MUTED : TEXT_PAPER,
               transition: "all 0.15s",
-              "&:hover": { background: (!inputValue.trim() || loading || !selectedpdf) ? "#EDEBE3" : "#000" },
+              "&:hover": { background: (!inputValue.trim() || loading || !selectedpdf) ? SURFACE_MUTED : "#000" },
               "&.Mui-disabled": { color: TEXT_MUTED },
             }}
           >

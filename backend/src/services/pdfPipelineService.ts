@@ -1,6 +1,6 @@
 import {extractPdfText} from "../services/PdfService";
 import {chunkText} from "../services/chunkService";
-import {generateEmbedding} from "../services/embeddingService";
+import {generateEmbeddings} from "../services/embeddingService";
 import Chunk from "../models/ChunksModel";
 
 export const processPdf=async(
@@ -14,14 +14,14 @@ export const processPdf=async(
   const chunks=await chunkText(text);
   console.log("TEXT CHUNKED");
   console.log(chunks);
-    for(const chunk of chunks)
-    {
-        const embedding=await generateEmbedding(chunk);
-    await Chunk.create({
-        pdfId,
-        chunk,
-        embedding,
-    })
-}
+  if (chunks.length === 0) return;
 
+  // Batched + rate-limited, same as repo indexing — see embeddingService.ts
+  const embeddings = await generateEmbeddings(chunks);
+  const docs = chunks.map((chunk, idx) => ({
+    pdfId,
+    chunk,
+    embedding: embeddings[idx],
+  }));
+  await Chunk.insertMany(docs);
 }

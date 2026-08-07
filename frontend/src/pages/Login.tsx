@@ -7,20 +7,14 @@ import CustomizedInput from '../components/shared/CustomizedInput'
 import { toast } from "react-hot-toast"
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext'
-import { loginUser } from '../helpers/api.communication'
 import GoogleLoginButton from '../components/GoogleLoginButton'
-// ── design tokens ── minimalist dark-card aesthetic ─────────────────────────
-const PAGE_BG   = "#F3F1EC";
-const CARD      = "#18181A";
-const TEXT_INK  = "#17171A";
-const TEXT_MUTED = "#8B8A84";
-const TEXT_PAPER = "#F6F5F1";
-const TEXT_PAPER_DIM = "#9C9B9E";
-const SANS = "'Inter', -apple-system, 'Segoe UI', sans-serif";
+import { useAppTheme } from '../context/ThemeContext'
 
 const Login = () => {
   const navigate = useNavigate();
   const auth = useAuth();
+  const { tokens } = useAppTheme();
+  const { PAGE_BG, CARD, TEXT_PAPER, TEXT_PAPER_DIM, SANS } = tokens;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -127,7 +121,7 @@ const Login = () => {
             border: "none",
             borderRadius: "999px",
             background: TEXT_PAPER,
-            color: TEXT_INK,
+            color: "#0E0F0E",
             fontFamily: SANS,
             fontSize: "14px",
             fontWeight: 700,

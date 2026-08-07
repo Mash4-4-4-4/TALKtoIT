@@ -38,6 +38,35 @@ const RepoSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // "processing" while extraction/indexing runs in the background,
+    // "ready" once it can be queried, "failed" if something went wrong.
+    status: {
+      type: String,
+      enum: ["processing", "ready", "failed"],
+      default: "processing",
+    },
+    // where the repo came from — used to show the right icon/label in the UI
+    source: {
+      type: String,
+      enum: ["zip", "github"],
+      default: "zip",
+    },
+    sourceUrl: {
+      type: String,
+      default: null,
+    },
+    errorMessage: {
+      type: String,
+      default: null,
+    },
+    filesProcessed: {
+      type: Number,
+      default: 0,
+    },
+    chunksCreated: {
+      type: Number,
+      default: 0,
+    },
     messages: [RepoChatMessageSchema],
   },
   {

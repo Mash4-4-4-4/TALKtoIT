@@ -2,28 +2,15 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import { FaRobot, FaFilePdf, FaCode, FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-
-/* ─── Add to your global CSS / index.css ──────────────────────────────────────
-   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-   ─────────────────────────────────────────────────────────────────────────── */
-
-// ── design tokens ── minimalist dark-card aesthetic ─────────────────────────
-const PAGE_BG        = "#F3F1EC";
-const CARD           = "#18181A";
-const CARD_ALT       = "#222224";
-const SURFACE        = "#FFFFFF";
-const BORDER_SOFT     = "#E8E5DC";
-const TEXT_INK        = "#17171A";
-const TEXT_MUTED      = "#8B8A84";
-const TEXT_PAPER      = "#F6F5F1";
-const TEXT_PAPER_DIM  = "#9C9B9E";
-const ACCENT          = "#7C9473";
-const SANS = "'Inter', -apple-system, 'Segoe UI', sans-serif";
+import { useAppTheme } from "../context/ThemeContext";
+import type { Tokens } from "../theme/tokens";
 
 /* ─── FeatureCard ──────────────────────────────────────────────────────────── */
 const FeatureCard = ({
-  icon, title, description, onClick,
-}: { icon: React.ReactNode; title: string; description: string; onClick: () => void }) => (
+  icon, title, description, onClick, tokens,
+}: { icon: React.ReactNode; title: string; description: string; onClick: () => void; tokens: Tokens }) => {
+  const { SURFACE, BORDER_SOFT, CARD, TEXT_PAPER, TEXT_INK, TEXT_MUTED, SANS } = tokens;
+  return (
   <Box
     onClick={onClick}
     sx={{
@@ -64,15 +51,16 @@ const FeatureCard = ({
       <FaArrowRight size={10} color={TEXT_INK} />
     </Box>
   </Box>
-);
+  );
+};
 
 /* ─── Stat ─────────────────────────────────────────────────────────────────── */
-const Stat = ({ value, label }: { value: string; label: string }) => (
+const Stat = ({ value, label, tokens }: { value: string; label: string; tokens: Tokens }) => (
   <Box>
-    <Typography sx={{ fontFamily: SANS, fontWeight: 800, fontSize: "26px", color: TEXT_PAPER, letterSpacing: "-0.5px" }}>
+    <Typography sx={{ fontFamily: tokens.SANS, fontWeight: 800, fontSize: "26px", color: tokens.TEXT_PAPER, letterSpacing: "-0.5px" }}>
       {value}
     </Typography>
-    <Typography sx={{ fontFamily: SANS, fontSize: "12px", fontWeight: 500, color: TEXT_PAPER_DIM, mt: "2px" }}>
+    <Typography sx={{ fontFamily: tokens.SANS, fontSize: "12px", fontWeight: 500, color: tokens.TEXT_PAPER_DIM, mt: "2px" }}>
       {label}
     </Typography>
   </Box>
@@ -81,6 +69,8 @@ const Stat = ({ value, label }: { value: string; label: string }) => (
 /* ─── Home ─────────────────────────────────────────────────────────────────── */
 const Home = () => {
   const navigate = useNavigate();
+  const { tokens } = useAppTheme();
+  const { PAGE_BG, CARD, CARD_ALT, TEXT_INK, TEXT_PAPER, TEXT_PAPER_DIM, ACCENT, SANS } = tokens;
 
   return (
     <Box
@@ -138,7 +128,7 @@ const Home = () => {
         <Box
           onClick={() => navigate("/chat")}
           sx={{
-            mt: "32px", borderRadius: "999px", background: TEXT_PAPER, color: TEXT_INK,
+            mt: "32px", borderRadius: "999px", background: TEXT_PAPER, color: "#0E0F0E",
             px: "28px", py: "14px", display: "flex", alignItems: "center", gap: "10px",
             cursor: "pointer", fontFamily: SANS, fontSize: "14px", fontWeight: 700,
             transition: "opacity 0.15s", "&:hover": { opacity: 0.88 },
@@ -153,9 +143,9 @@ const Home = () => {
           mt: "48px", pt: "32px", borderTop: "1px solid #2A2A2C",
           display: "flex", gap: { xs: 4, md: 8 }, flexWrap: "wrap", justifyContent: "center",
         }}>
-          <Stat value="2,400+" label="Developers onboard" />
-          <Stat value="18K+"   label="Questions answered" />
-          <Stat value="3"      label="AI modes in one app" />
+          <Stat value="2,400+" label="Developers onboard" tokens={tokens} />
+          <Stat value="18K+"   label="Questions answered" tokens={tokens} />
+          <Stat value="3"      label="AI modes in one app" tokens={tokens} />
         </Box>
       </Box>
 
@@ -169,18 +159,21 @@ const Home = () => {
           title="General chat"
           description="A fast, general-purpose assistant for everyday questions, brainstorming, and quick answers."
           onClick={() => navigate("/chat")}
+          tokens={tokens}
         />
         <FeatureCard
           icon={<FaFilePdf />}
           title="PDF chat"
           description="Upload any document and ask questions about it directly — no more scanning pages by hand."
           onClick={() => navigate("/pdf")}
+          tokens={tokens}
         />
         <FeatureCard
           icon={<FaCode />}
           title="Repo chat"
-          description="Upload a zipped codebase and ask how it works, where something lives, or why it breaks."
+          description="Upload a zipped codebase, or paste a GitHub link, and ask how it works, where something lives, or why it breaks."
           onClick={() => navigate("/repo")}
+          tokens={tokens}
         />
       </Box>
     </Box>

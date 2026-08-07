@@ -148,6 +148,15 @@ export const uploadRepo = async (
   return res.data;
 };
 
+export const uploadRepoFromUrl = async (githubUrl: string) => {
+  const res = await axios.post(
+    "/repo/upload-url",
+    { githubUrl }
+  );
+
+  return res.data;
+};
+
 export const getAllRepos = async () => {
   const res = await axios.get(
     "/repo/all"

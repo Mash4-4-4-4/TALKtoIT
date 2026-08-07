@@ -5,7 +5,6 @@ import NotFound from "./pages/NotFound";
 import Chat from "./pages/Chat";
 import {Routes,Route} from "react-router-dom";
 import Signup from "./pages/Signup";
-import { useAuth } from "./context/AuthContext";
 import PdfChat from "./pages/PdfChat";
 import RepoChat from "./pages/RepoChat";
 function App() {

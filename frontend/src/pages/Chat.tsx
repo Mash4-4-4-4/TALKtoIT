@@ -18,24 +18,9 @@ import { useAuth } from "../context/AuthContext";
 import { sendChatMessages } from "../helpers/api.communication";
 import { toast } from "react-hot-toast";
 import { FaFilePdf, FaRobot } from "react-icons/fa";
-
-/* ─── Add to your global CSS / index.css ──────────────────────────────────────
-   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-   ─────────────────────────────────────────────────────────────────────────── */
-
-// ── design tokens ── minimalist dark-card aesthetic ─────────────────────────
-const PAGE_BG        = "#F3F1EC"; // warm ivory backdrop
-const CARD           = "#18181A"; // near-black card surface
-const CARD_ALT       = "#222224"; // nested surface within a dark card
-const SURFACE        = "#FFFFFF"; // light card surface
-const BORDER_SOFT     = "#E8E5DC"; // hairline on light bg
-const BORDER_DARK     = "#333335"; // hairline on dark card
-const TEXT_INK        = "#17171A"; // primary text on light
-const TEXT_MUTED      = "#8B8A84"; // secondary text on light
-const TEXT_PAPER      = "#F6F5F1"; // primary text on dark
-const TEXT_PAPER_DIM  = "#9C9B9E"; // secondary text on dark
-const ACCENT          = "#7C9473"; // quiet sage — status/success only
-const SANS = "'Inter', -apple-system, 'Segoe UI', sans-serif";
+import { useAppTheme } from "../context/ThemeContext";
+import ThinkingIndicator from "../components/shared/ThinkingIndicator";
+import { confirmToast } from "../components/shared/ConfirmToast";
 
 // ── types (unchanged) ─────────────────────────────────────────────────────────
 type Message = {
@@ -75,9 +60,14 @@ const Chat = () => {
   const navigate  = useNavigate();
   const inputRef  = React.useRef<HTMLInputElement>(null);
   const auth      = useAuth();
+  const { tokens } = useAppTheme();
+  const { PAGE_BG, CARD, CARD_ALT, SURFACE, SURFACE_ALT, SURFACE_MUTED, BORDER_SOFT, BORDER_DARK, TEXT_INK, TEXT_MUTED, TEXT_PAPER, TEXT_PAPER_DIM, ACCENT, SANS } = tokens;
 
   // ── input text tracker — drives the disabled state of the send button ───────
   const [inputValue, setInputValue] = useState<string>("");
+
+  // ── "thinking…" state — true while we're waiting on the assistant's reply ──
+  const [loading, setLoading] = useState(false);
 
   // ── chat messages ──────────────────────────────────────────────────────────
   const [chatMessages, setChatMessages] = useState<Message[]>([
@@ -111,23 +101,29 @@ const Chat = () => {
     setInputValue(""); // clear tracker → re-disables button immediately
     const newMessage: Message = { role: "user", content };
     setChatMessages((prev) => [...prev, newMessage]);
+    setLoading(true);
     try {
       const chatData = await sendChatMessages(content);
       setChatMessages(chatData.chats);
     } catch (error) {
       console.log(error);
+      toast.error("Couldn't send that message. Please check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDeleteChats = () => {
-    try {
-      deleteAllChats();
-      setChatMessages([]);
-      toast.success("Chats deleted successfully");
-    } catch (error) {
-      console.log(error);
-      toast.error("Failed to delete chats");
-    }
+    confirmToast(tokens, "Delete all chats? This can't be undone.", () => {
+      try {
+        deleteAllChats();
+        setChatMessages([]);
+        toast.success("Chats deleted successfully");
+      } catch (error) {
+        console.log(error);
+        toast.error("Failed to delete chats");
+      }
+    });
   };
 
   const hasFetched = React.useRef(false);
@@ -171,7 +167,7 @@ const Chat = () => {
     if (!el) return;
     const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
     if (distanceFromBottom < 200) scrollToBottom();
-  }, [chatMessages]);
+  }, [chatMessages, loading]);
 
   // ── render ─────────────────────────────────────────────────────────────────
   return (
@@ -314,7 +310,8 @@ const Chat = () => {
                   maxWidth: chat.role === "assistant" ? "100%" : "70%",
                   wordBreak: "break-word", overflowWrap: "break-word",
                   borderRadius: chat.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                  background: chat.role === "user" ? CARD : "#F5F4EF",
+                  background: chat.role === "user" ? CARD : SURFACE_ALT,
+                  transition: "background 0.2s ease",
                   px: 2.25, py: 1.5,
                 }}
               >
@@ -346,6 +343,9 @@ const Chat = () => {
               </Box>
             </Box>
           ))}
+
+          {/* thinking / replying indicator — shown while awaiting the assistant's reply */}
+          {loading && <ThinkingIndicator />}
 
           <div ref={messagesEndRef} style={{ height: 0 }} />
         </Box>
@@ -379,10 +379,10 @@ const Chat = () => {
             variant="outlined"
             placeholder="Message the assistant…"
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && inputValue.trim()) handleSend(); }}
+            onKeyDown={(e) => { if (e.key === "Enter" && inputValue.trim() && !loading) handleSend(); }}
             sx={{
               "& .MuiOutlinedInput-root": {
-                background: "#F5F4EF", borderRadius: "999px",
+                background: SURFACE_ALT, borderRadius: "999px", transition: "background 0.2s ease",
                 "& fieldset": { border: "none" },
               },
               "& .MuiInputBase-input": {
@@ -394,13 +394,13 @@ const Chat = () => {
 
           <IconButton
             onClick={handleSend}
-            disabled={!inputValue.trim()}
+            disabled={!inputValue.trim() || loading}
             sx={{
               width: "44px", height: "44px", borderRadius: "50%",
-              background: inputValue.trim() ? CARD : "#EDEBE3",
-              color: inputValue.trim() ? TEXT_PAPER : TEXT_MUTED,
+              background: inputValue.trim() && !loading ? CARD : SURFACE_MUTED,
+              color: inputValue.trim() && !loading ? TEXT_PAPER : TEXT_MUTED,
               transition: "all 0.15s",
-              "&:hover": { background: inputValue.trim() ? "#000" : "#EDEBE3" },
+              "&:hover": { background: inputValue.trim() && !loading ? "#000" : SURFACE_MUTED },
               "&.Mui-disabled": { color: TEXT_MUTED },
             }}
           >

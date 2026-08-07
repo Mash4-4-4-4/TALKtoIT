@@ -4,6 +4,7 @@ import upload from "../middleware/uploadMiddleware";
 import { verifyToken } from "../utils/tokenmanager";
 import {
   uploadRepo,
+  uploadRepoFromUrl,
   getRepos,
   askRepoQuestion,
   deleteRepo,
@@ -14,6 +15,7 @@ import { getRepoTree, getRepoFile } from "../controllers/repoController";
 const repoRouter = Router();
 
 repoRouter.post("/upload", verifyToken, upload.single("file"), uploadRepo);
+repoRouter.post("/upload-url", verifyToken, uploadRepoFromUrl);
 repoRouter.get("/all", verifyToken, getRepos);
 repoRouter.post("/chat", verifyToken, askRepoQuestion);
 repoRouter.get("/:id/history", verifyToken, getRepoChatHistory);
