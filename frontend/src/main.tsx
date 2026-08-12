@@ -11,8 +11,10 @@ import axios from 'axios';
 import {Toaster} from "react-hot-toast"
 import {GoogleOAuthProvider} from "@react-oauth/google"
 
-axios.defaults.baseURL="http://localhost:5000/api/v1";
-axios.defaults.withCredentials=true; //this will chack for cookies in the browser and send it to the server for authentication
+axios.defaults.baseURL =
+  `${import.meta.env.VITE_API_URL}/api/v1`;
+
+axios.defaults.withCredentials = true; //this will chack for cookies in the browser and send it to the server for authentication
 
 // Bridges our AppThemeProvider (dark/light + design tokens) into MUI's own
 // theme so components rendered outside our per-page sx tokens (like the

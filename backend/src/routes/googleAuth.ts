@@ -6,6 +6,7 @@ import { COOKIE_NAME } from '../utils/constants';
 
 const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const isProduction = process.env.NODE_ENV === "production";
 
 router.post('/google', async (req: Request, res: Response) => {
   try {
@@ -42,24 +43,24 @@ router.post('/google', async (req: Request, res: Response) => {
     }
 
     // same cookie pattern as UserLogin
-    res.clearCookie(COOKIE_NAME, {
-      domain: 'localhost',
-      httpOnly: true,
-      signed: true,
-      path: '/',
-    });
+res.clearCookie(COOKIE_NAME, {
+  httpOnly: true,
+  signed: true,
+  path: "/",
+});
 
     const token = createToken(existingUser._id.toString(), existingUser.email, '7d');
 
     const expires = new Date();
     expires.setDate(expires.getDate() + 7);
-    res.cookie('token', token, {
-      path: '/',
-      domain: 'localhost',
-      expires,
-      httpOnly: true,
-      signed: true,
-    });
+res.cookie("token", token, {
+  path: "/",
+  expires,
+  httpOnly: true,
+  signed: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+});
 
     return res.status(200).json({
       message: 'Successfully logged in',

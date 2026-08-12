@@ -6,7 +6,7 @@ import {hash, compare} from "bcryptjs";
 import { Request,Response,NextFunction } from "express";
 import { createToken } from "../utils/tokenmanager";
 //apis
-
+const isProduction = process.env.NODE_ENV === "production";
 export const GetAllUsers= async (req:Request,res:Response,next:NextFunction)=>
 {
    try {
@@ -28,13 +28,11 @@ export const UserSignUp= async (req:Request,res:Response,next:NextFunction)=>
      const User= new user({name,email,password:hashedpass});
      await User.save();
 //crate and storing token afetr user is saved
-       res.clearCookie(COOKIE_NAME,
-    {
-      domain:"localhost",
-      httpOnly:true,
-      signed:true,
-      path:"/",
-    });
+res.clearCookie(COOKIE_NAME, {
+  httpOnly: true,
+  signed: true,
+  path: "/",
+});
 
 
    const token=createToken(User._id.toString(),email,"7d");
@@ -42,14 +40,14 @@ export const UserSignUp= async (req:Request,res:Response,next:NextFunction)=>
    //sending the token in the form of cookie
    const expires=new Date();
    expires.setDate(expires.getDate()+7) //this will set the expiry time for the cookie to 7 days
-   res.cookie("token",
-    token,
-    {path:"/",
-      domain:"localhost",
-      expires,
-      httpOnly:true,
-      signed:true,
-    });
+res.cookie("token", token, {
+  path: "/",
+  expires,
+  httpOnly: true,
+  signed: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+});
 
 
      return res.status(200).json({message:"okhay",name:User.name,email:User.email})
@@ -78,13 +76,11 @@ const isPasswordCorrect = await compare(password, existingUser!.password);
    if(!isPasswordCorrect){
      return res.status(401).send("incorrect password")
    }
-  res.clearCookie(COOKIE_NAME,
-    {
-      domain:"localhost",
-      httpOnly:true,
-      signed:true,
-      path:"/",
-    });
+res.clearCookie(COOKIE_NAME, {
+  httpOnly: true,
+  signed: true,
+  path: "/",
+});
 
 
    const token=createToken(existingUser!._id.toString(),email,"7d");
@@ -92,14 +88,14 @@ const isPasswordCorrect = await compare(password, existingUser!.password);
    //sending the token in the form of cookie
    const expires=new Date();
    expires.setDate(expires.getDate()+7) //this will set the expiry time for the cookie to 7 days
-   res.cookie("token",
-    token,
-    {path:"/",
-      domain:"localhost", 
-      expires,
-      httpOnly:true,
-      signed:true,
-    });
+res.cookie("token", token, {
+  path: "/",
+  expires,
+  httpOnly: true,
+  signed: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+});
 
    return res.status(200).json({message:"Succesfuly login",token})
    } catch (error) {
@@ -144,13 +140,11 @@ export const UserLogout= async (req:Request,res:Response,next:NextFunction)=>
       return res.status(401).send("token is invalid");
     }
 
-     res.clearCookie(COOKIE_NAME,
-    {
-      domain:"localhost",
-      httpOnly:true,
-      signed:true,
-      path:"/",
-    });
+   res.clearCookie(COOKIE_NAME, {
+  httpOnly: true,
+  signed: true,
+  path: "/",
+});
 
    return res.status(200).json({message:"Succesfuly logged out"})
    } catch (error) {
