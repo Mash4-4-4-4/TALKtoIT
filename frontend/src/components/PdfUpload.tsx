@@ -1,16 +1,13 @@
 import { useState } from "react";
 import { Box, Typography } from "@mui/material";
+import { UploadCloud, Eye } from "lucide-react";
 import {
   uploadPdf,
   getPdfText,
   getAllPdfs,
 } from "../helpers/api.communication";
 import { toast } from "react-hot-toast";
-
-// ── theme tokens (same as rest of app) ────────────────────────────────────────
-const CYAN  = "#00ffcc";
-const AMBER = "#ffaa00";
-const MONO  = "'Share Tech Mono', 'Courier New', monospace";
+import { useAppTheme } from "../context/ThemeContext";
 
 type PdfType = { _id: string; pdf: string };
 
@@ -20,9 +17,12 @@ type Props = {
 };
 
 const PdfUpload = ({ fetchPdfs, setSelectedPdf }: Props) => {
-  const [file, setFile] = useState<File | null>(null);
+  const { tokens } = useAppTheme();
+  const { CARD_ALT, TEXT_PAPER, TEXT_PAPER_DIM, ACCENT, BORDER_DARK, SANS } = tokens;
 
-  // ── logic unchanged ────────────────────────────────────────────────────────
+  const [file, setFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
   const showPdf = (pdf: string) => {
     const fileUrl = `http://localhost:5000/files/${pdf}`;
     window.open(fileUrl, "_blank");
@@ -38,116 +38,114 @@ const PdfUpload = ({ fetchPdfs, setSelectedPdf }: Props) => {
       }
     } catch (error) {
       console.log(error);
-      toast.error("Couldn't load your PDFs. Please try again.");
+      toast.error("Couldn't load PDFs.");
     }
   };
 
   const handleFileSend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!file) { toast.error("Please select a PDF file first."); return; }
-    if (!file.name.toLowerCase().endsWith(".pdf")) { toast.error("Only .pdf files are supported."); return; }
-    const toastId = toast.loading(`Uploading "${file.name}"…`);
+    if (!file) {
+      toast.error("Choose a PDF first.");
+      return;
+    }
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      toast.error("Only PDF files are supported.");
+      return;
+    }
+
+    const toastId = toast.loading("Uploading…");
     try {
+      setSubmitting(true);
       const formData = new FormData();
       formData.append("file", file);
       const uploadedPdf = await uploadPdf(formData);
       setSelectedPdf({ _id: uploadedPdf.pdfId, pdf: uploadedPdf.filename });
       await fetchPdfs();
-      const text = await getPdfText(formData);
-      console.log("PDF Text:");
-      console.log(text);
-      toast.success(`"${file.name}" uploaded — you can start asking questions.`, { id: toastId });
+      await getPdfText(formData);
+      toast.success(`"${file.name}" is ready.`, { id: toastId });
       setFile(null);
     } catch (error) {
       console.log(error);
-      toast.error("Couldn't upload that PDF. Please try again.", { id: toastId });
+      toast.error("Upload failed. Try again.", { id: toastId });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleFileSend}
-      sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
-    >
-      {/* ── FILE INPUT ── */}
+    <Box component="form" onSubmit={handleFileSend} sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      {/* ── DROPZONE ── */}
       <Box
         sx={{
-          border: `1px dashed ${AMBER}55`,
-          p: "10px 12px",
+          border: `1.5px dashed ${BORDER_DARK}`,
+          borderRadius: "14px",
+          p: "14px 12px",
           position: "relative",
           transition: "all 0.15s",
-          "&:hover": { borderColor: AMBER, background: `${AMBER}08` },
+          "&:hover": { borderColor: ACCENT, background: `${ACCENT}14` },
         }}
       >
-        {/* hidden native input — covers the whole box */}
         <Box
           component="input"
           type="file"
           accept=".pdf"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            if (e.target.files && e.target.files[0]) setFile(e.target.files[0]);
+            const selectedFile = e.target.files?.[0];
+            if (!selectedFile) return;
+            setFile(selectedFile);
           }}
-          sx={{
-            position: "absolute", inset: 0,
-            opacity: 0, cursor: "pointer", width: "100%", height: "100%",
-          }}
+          sx={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%" }}
         />
-        {/* visible label */}
-        <Typography
-          sx={{
-            fontFamily: MONO, fontSize: "10px", letterSpacing: "1px",
-            color: file ? AMBER : `${AMBER}55`,
-            pointerEvents: "none",
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-          }}
-        >
-          {file ? `▶ ${file.name}` : "> CHOOSE FILE (.PDF)"}
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: "8px", pointerEvents: "none" }}>
+          <UploadCloud size={15} color={file ? ACCENT : TEXT_PAPER_DIM} />
+          <Typography
+            sx={{
+              fontFamily: SANS, fontSize: "12px", fontWeight: 500,
+              color: file ? TEXT_PAPER : TEXT_PAPER_DIM,
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}
+          >
+            {file ? file.name : "Choose a PDF file"}
+          </Typography>
+        </Box>
       </Box>
 
       {/* ── UPLOAD BUTTON ── */}
       <Box
         component="button"
         type="submit"
+        disabled={!file || submitting}
         sx={{
-          width: "100%",
-          border: `1.5px solid ${file ? AMBER : `${AMBER}33`}`,
-          background: "transparent",
-          color: file ? AMBER : `${AMBER}33`,
-          fontFamily: MONO, fontSize: "11px", letterSpacing: "2px",
-          textTransform: "uppercase", py: "8px",
-          cursor: file ? "pointer" : "not-allowed",
+          width: "100%", border: "none", borderRadius: "12px",
+          background: file && !submitting ? ACCENT : CARD_ALT,
+          color: file && !submitting ? "#0E0F0E" : TEXT_PAPER_DIM,
+          fontFamily: SANS, fontSize: "12px", fontWeight: 700, letterSpacing: "0.2px",
+          py: "10px", cursor: file && !submitting ? "pointer" : "not-allowed",
           display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
-          boxShadow: file ? `0 0 8px ${AMBER}33` : "none",
-          transition: "all 0.15s",
-          "&:hover": file
-            ? { background: `${AMBER}18`, boxShadow: `0 0 14px ${AMBER}66` }
-            : {},
+          transition: "opacity 0.15s",
+          "&:hover": file && !submitting ? { opacity: 0.88 } : {},
         }}
       >
-        ↑ UPLOAD PDF
+        {submitting ? "Uploading…" : "Upload document"}
       </Box>
 
-      {/* ── SHOW PDF BUTTON ── */}
+      {/* ── SHOW LATEST PDF BUTTON ── */}
       <Box
         component="button"
         type="button"
         onClick={getPdf}
         sx={{
-          width: "100%",
-          border: `1.5px solid ${CYAN}55`,
-          background: "transparent",
-          color: `${CYAN}99`,
-          fontFamily: MONO, fontSize: "11px", letterSpacing: "2px",
-          textTransform: "uppercase", py: "8px",
-          cursor: "pointer",
+          width: "100%", border: `1.5px solid ${BORDER_DARK}`, borderRadius: "12px",
+          background: "transparent", color: TEXT_PAPER_DIM,
+          fontFamily: SANS, fontSize: "12px", fontWeight: 600, letterSpacing: "0.2px",
+          py: "9px", cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
           transition: "all 0.15s",
-          "&:hover": { background: `${CYAN}11`, borderColor: CYAN, color: CYAN, boxShadow: `0 0 8px ${CYAN}33` },
+          "&:hover": { borderColor: ACCENT, color: TEXT_PAPER },
         }}
       >
-        ⊞ SHOW PDF
+        <Eye size={13} />
+        View latest PDF
       </Box>
     </Box>
   );

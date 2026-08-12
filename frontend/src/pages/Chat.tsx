@@ -174,8 +174,8 @@ const Chat = () => {
     <Box
       sx={{
         display: "flex",
-        height: "100vh",
-        maxHeight: "100vh",
+        height: "100%",
+        maxHeight: "100%",
         overflow: "hidden",
         background: PAGE_BG,
         fontFamily: SANS,
@@ -210,22 +210,22 @@ const Chat = () => {
 
         <Box sx={{ height: "1px", background: BORDER_DARK, mx: 2.5 }} />
 
-        {/* nav */}
-        <Box sx={{ px: 1.5, pt: 2, display: "flex", flexDirection: "column", gap: "4px" }}>
-          <Box
-            onClick={() => setChatMessages([])}
-            sx={{
-              mx: 1, borderRadius: "14px", px: "14px", py: "11px",
-              fontFamily: SANS, fontSize: "13px", fontWeight: 600, letterSpacing: "0.1px",
-              color: TEXT_PAPER, cursor: "pointer",
-              background: CARD_ALT,
-              display: "flex", alignItems: "center", gap: "10px",
-              transition: "background 0.15s",
-              "&:hover": { background: "#2a2a2c" },
-            }}
-          >
-            <FaRobot size={13} /> AI Chat
-          </Box>
+        {/* nav 
+          <Box sx={{ px: 1.5, pt: 2, display: "flex", flexDirection: "column", gap: "4px" }}>
+            <Box
+              onClick={() => setChatMessages([])}
+              sx={{
+                mx: 1, borderRadius: "14px", px: "14px", py: "11px",
+                fontFamily: SANS, fontSize: "13px", fontWeight: 600, letterSpacing: "0.1px",
+                color: TEXT_PAPER, cursor: "pointer",
+                background: CARD_ALT,
+                display: "flex", alignItems: "center", gap: "10px",
+                transition: "background 0.15s",
+                "&:hover": { background: "#2a2a2c" },
+              }}
+            >
+              <FaRobot size={13} /> AI Chat
+            </Box>
 
           <Box
             onClick={() => navigate("/pdf")}
@@ -240,7 +240,8 @@ const Chat = () => {
           >
             <FaFilePdf size={13} /> PDF Chat
           </Box>
-        </Box>
+        </Box>*/}
+        
 
         <Box sx={{ flex: 1 }} />
 

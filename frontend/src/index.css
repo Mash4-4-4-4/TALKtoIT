@@ -6,9 +6,13 @@
 html,body{
   margin: 0;
   padding: 0;
+  height: 100%;
   background-color: #F3F1EC; /* light-mode default; ThemeContext overrides this at runtime */
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   transition: background-color 0.2s ease;
+}
+#root {
+  height: 100%;
 }
 .image-inverted
 {

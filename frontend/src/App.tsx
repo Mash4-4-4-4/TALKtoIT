@@ -7,22 +7,21 @@ import {Routes,Route} from "react-router-dom";
 import Signup from "./pages/Signup";
 import PdfChat from "./pages/PdfChat";
 import RepoChat from "./pages/RepoChat";
+import { Box } from "@mui/material";
+
 function App() {
   return (
     <>
-       <main>
-        <Header/>
-        <Routes> //route container
-
-          <Route path="/" element={<Home/>} />
-          <Route path="/login" element={<Login/>}></Route>
-          <Route path="/signup" element={<Signup/>}></Route>
-          <Route path="/notfound" element={<NotFound/>}></Route>
-          <Route path="/chat" element={<Chat/>}></Route>
-          <Route path="/pdf"element={<PdfChat/>} ></Route>
-          <Route path="/repo" element={<RepoChat/>} ></Route>
-        </Routes>
-       </main>
+      <Header />
+          <Routes> {/* route container */}
+            <Route path="/" element={<Home/>} />
+            <Route path="/login" element={<Login/>}></Route>
+            <Route path="/signup" element={<Signup/>}></Route>
+            <Route path="/notfound" element={<NotFound/>}></Route>
+            <Route path="/chat" element={<Chat/>}></Route>
+            <Route path="/pdf" element={<PdfChat/>} ></Route>
+            <Route path="/repo" element={<RepoChat/>} ></Route>
+          </Routes>
     </>
   )
 }

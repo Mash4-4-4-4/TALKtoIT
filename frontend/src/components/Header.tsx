@@ -63,9 +63,7 @@ const Header = () => {
     <Box
       component="header"
       sx={{
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
+        flexShrink: 0,
       }}
     >
       <Box
