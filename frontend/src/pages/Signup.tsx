@@ -24,10 +24,16 @@ const Signup = () => {
       toast.loading("Signing in...", { id: "signup" });
       await auth?.signup(name, email, password);
       toast.success("Signup successful!", { id: "signup" });
-    } catch (error) {
-      console.error("signup failed:", error);
-      toast.error("Signup failed. Please try again.", { id: "signup" });
-    }
+    } catch (error: any) {
+  console.log("signup failed", error);
+
+  const message =
+    error.response?.data?.errors?.[0]?.msg ||
+    error.response?.data?.message ||
+    "Signup failed. Please try again.";
+
+  toast.error(message);
+}
   };
 
   useEffect(() => {
