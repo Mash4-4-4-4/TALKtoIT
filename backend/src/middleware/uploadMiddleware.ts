@@ -1,8 +1,9 @@
 import multer from "multer";
 import fs from "fs";
 import path from "path";
+import os from "os";
 
-const uploadPath = path.join(process.cwd(), "files");
+const uploadPath = path.join(os.tmpdir(), "talktoit-files");
 
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, {
@@ -22,10 +23,7 @@ const storage = multer.diskStorage({
     const uniqueSuffix =
       `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
 
-    cb(
-      null,
-      `${uniqueSuffix}-${file.originalname}`
-    );
+    cb(null, `${uniqueSuffix}-${file.originalname}`);
   },
 });
 
