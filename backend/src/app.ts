@@ -17,9 +17,22 @@ app.use(
   express.static("files")
 );
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://tal-kto-it.vercel.app",
+  "https://tal-kto-3jcde85br-mash4-4-4-4s-projects.vercel.app",
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow requests with no origin, such as server-to-server requests
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );

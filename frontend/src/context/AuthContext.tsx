@@ -52,7 +52,6 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         await logoutUser();
         setUser(null);
         setIsLoggedIn(false);
-        window.location.reload();
     };
 
     const value = { user, isLoggedIn, login, signup, logout, checkStatus };
