@@ -12,7 +12,7 @@ export const loginUser=async(email:string,password:string)=>
 
 export const logoutUser=async()=>
 {
-    const res= await axios.get("/user/logout");
+    const res= await axios.post("/user/logout");
     if(res.status!==200)
     {
         throw new Error("Logout failed");

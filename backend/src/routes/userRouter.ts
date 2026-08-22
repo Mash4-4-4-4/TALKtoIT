@@ -8,6 +8,6 @@ const userRoutes=Router();
 userRoutes.get("/",GetAllUsers) //to handle users we have got the controllers getAllUser is in userController
 userRoutes.post("/signup",validate(signupValidator),UserSignUp);
 userRoutes.post("/login",validate(loginValidator),UserLogin);
-userRoutes.get("/logout",verifyToken,UserLogout);
+userRoutes.post("/logout",verifyToken,UserLogout);
 userRoutes.get("/auth-status",verifyToken,VerifyUser) //this is to check if the user is logged in or not by checking the token in the cookies and verifying it;
 export default userRoutes;
