@@ -1,30 +1,27 @@
 import multer from "multer";
-import fs from "fs";
 import path from "path";
+import fs from "fs";
 
-const uploadDir = path.join(process.cwd(), "files");
+const uploadPath = path.join(process.cwd(), "files");
 
-// Create files folder automatically if it doesn't exist
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, {
+// Create the files folder automatically if it doesn't exist
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, {
     recursive: true,
   });
-
-  console.log("Created upload directory:", uploadDir);
 }
+console.log("UPLOAD PATH:", uploadPath);
+console.log("UPLOAD PATH EXISTS:", fs.existsSync(uploadPath));
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, uploadDir);
+    cb(null, uploadPath);
   },
 
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now();
+    const uniqueSuffix = `${Date.now()}-${file.originalname}`;
 
-    cb(
-      null,
-      `${uniqueSuffix}-${file.originalname}`
-    );
+    cb(null, uniqueSuffix);
   },
 });
 
@@ -33,6 +30,14 @@ const upload = multer({
 
   limits: {
     fileSize: 50 * 1024 * 1024,
+  },
+
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed"));
+    }
   },
 });
 
