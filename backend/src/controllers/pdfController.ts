@@ -8,44 +8,60 @@ import ChunksModel from "../models/ChunksModel";
 import { askPdf } from "../services/chatService";
 import { processPdf } from "../services/pdfPipelineService";
 import { Request, Response } from "express";
-export const uploadPdf =
-async (req: Request, res: Response) => {
-
+export const uploadPdf = async (
+  req: Request,
+  res: Response
+) => {
   try {
+    console.log("PDF UPLOAD REQUEST RECEIVED");
 
     if (!req.file) {
-      return res
-      .status(400)
-      .json({
-        message:
-        "No file uploaded",
+      console.log("NO FILE FOUND");
+
+      return res.status(400).json({
+        message: "No file uploaded",
       });
     }
-const filename = req.file.filename;
 
-const pdf = await savePdf(filename);
-console.log("PROCESSING PDF...");
-await processPdf(
-  pdf._id.toString(),
-  req.file.path
-);
+    console.log("FILE RECEIVED:", req.file);
 
-    return res.json({
-      message:
-      "File uploaded successfully",
+    const filename = req.file.filename;
+
+    console.log("SAVING PDF TO DATABASE...");
+
+    const pdf = await savePdf(filename);
+
+    console.log("PDF SAVED:", pdf._id.toString());
+
+    console.log("PROCESSING PDF...");
+
+    await processPdf(
+      pdf._id.toString(),
+      req.file.path
+    );
+
+    console.log("PDF PROCESSING COMPLETED");
+
+    return res.status(200).json({
+      message: "File uploaded successfully",
       filename,
-      pdfId:pdf._id,
+      pdfId: pdf._id,
     });
 
   } catch (error) {
 
-    console.log(error);
+    console.log("========== PDF UPLOAD ERROR ==========");
+    console.error(error);
 
-    return res
-    .status(500)
-    .json({
-      message:
-      "Upload failed",
+    if (error instanceof Error) {
+      console.log("ERROR MESSAGE:", error.message);
+      console.log("ERROR STACK:", error.stack);
+    }
+
+    return res.status(500).json({
+      message: error instanceof Error
+        ? error.message
+        : "Upload failed",
     });
   }
 };

@@ -92,56 +92,34 @@ const indexRepository = async (repoId: mongoose.Types.ObjectId, destDir: string)
   }
 };
 
-export const uploadRepo = async (req: Request, res: Response) => {
+export const uploadRepo = async (
+  req: Request,
+  res: Response
+) => {
   try {
+    console.log("REPO UPLOAD CONTROLLER HIT");
+    console.log("FILE:", req.file);
+
     if (!req.file) {
-      return res.status(400).json({ message: "No repository zip file uploaded" });
+      return res.status(400).json({
+        message: "No repository file uploaded",
+      });
     }
 
-    const userId = res.locals.jwtData.id;
-    const filename = req.file.filename;
-    const repoName = req.file.originalname.replace(".zip", "");
-    const repoId = new mongoose.Types.ObjectId();
-    const destDir = path.join(".", "files", "repos", repoId.toString());
+    console.log("ZIP PATH:", req.file.path);
 
-    const repo = await RepoModel.create({
-      _id: repoId,
-      repoName,
-      uploadedBy: userId,
-      zipFile: filename,
-      extractedPath: destDir,
-      status: "processing",
-      source: "zip",
-    });
+    // rest of your existing code here
 
-    fs.mkdirSync(destDir, { recursive: true });
-
-    console.log("EXTRACTING ZIP...");
-    extractZip(req.file.path, destDir);
-
-    // Respond immediately — the frontend now knows about this repo (in
-    // "processing" status) without needing to refresh, and can poll
-    // /repo/all until it flips to "ready".
-    res.status(202).json({
-      message: "Repository received. Indexing has started in the background.",
-      repoId: repo._id,
-      repoName: repo.repoName,
-      status: repo.status,
-    });
-
-    // Clean up the uploaded zip file to save space, then index in the background.
-    try {
-      fs.unlinkSync(req.file.path);
-    } catch (e) {
-      console.warn("Could not delete uploaded zip file:", e);
-    }
-
-    indexRepository(repoId, destDir);
   } catch (error) {
-    console.error("Upload/Processing failed:", error);
-    if (!res.headersSent) {
-      return res.status(500).json({ message: "Repository upload/indexing failed" });
-    }
+    console.log("REPO UPLOAD FULL ERROR:");
+    console.error(error);
+
+    return res.status(500).json({
+      message:
+        error instanceof Error
+          ? error.message
+          : "Repository upload failed",
+    });
   }
 };
 
