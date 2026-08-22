@@ -19,7 +19,8 @@ const storage = multer.diskStorage({
   },
 
   filename: function (req, file, cb) {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const uniqueSuffix =
+      `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
 
     cb(
       null,
@@ -30,7 +31,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-
   limits: {
     fileSize: 50 * 1024 * 1024,
   },
