@@ -8,6 +8,9 @@ import { errorHnadler } from "./middleware/errorHandler";
 
 const app = express();
 
+app.get("/", (req, res) => {
+  res.send("TalkToIt backend is running 🚀");
+});
 
 app.use(
   "/files",
