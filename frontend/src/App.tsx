@@ -7,7 +7,6 @@ import {Routes,Route} from "react-router-dom";
 import Signup from "./pages/Signup";
 import PdfChat from "./pages/PdfChat";
 import RepoChat from "./pages/RepoChat";
-import { Box } from "@mui/material";
 
 function App() {
   return (
